@@ -1,0 +1,23 @@
+name: sudoku-solver
+version: 0.1.0
+
+dependencies:
+  - base >= 4.7 && < 5
+
+library:
+  source-dirs: src
+
+executables:
+  sudoku-solver-exe:
+    main: Main.hs
+    source-dirs: app
+    dependencies:
+      - sudoku-solver
+
+tests:
+  sudoku-solver-test:
+    main: Spec.hs
+    source-dirs: test
+    dependencies:
+      - sudoku-solver
+      - hspec
