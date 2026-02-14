@@ -1,0 +1,16 @@
+name: add-two-numbers
+version: 0.1.0
+
+dependencies:
+  - base >= 4.7 && < 5
+
+library:
+  source-dirs: src
+
+tests:
+  add-two-numbers-test:
+    main: Spec.hs
+    source-dirs: test
+    dependencies:
+      - add-two-numbers
+      - hspec
