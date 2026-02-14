@@ -29,13 +29,14 @@ async function discoverTasks(): Promise<TaskConfig[]> {
     ).map(([langId, langConf]) => ({
       id: langId,
       scaffoldDir: path.join(taskDir, langId),
-      testCommand: langConf.testCommand,
+      runCommand: langConf.runCommand,
       setupCommand: langConf.setupCommand,
     }));
 
     tasks.push({
       id: taskJson.id,
       specPath: path.join(taskDir, taskJson.spec),
+      testsPath: path.join(taskDir, taskJson.tests),
       languages,
     });
   }
@@ -117,6 +118,7 @@ program
           const result = await runTrial(
             task.id,
             task.specPath,
+            task.testsPath,
             lang,
             runConfig,
             trial,
@@ -161,17 +163,18 @@ program
   .command("score")
   .description("re-score an existing trial directory")
   .argument("<dir>", "path to trial directory")
-  .option("--test-command <cmd>", "test command to run", "npm test")
+  .requiredOption("--tests <path>", "path to tests.json file")
+  .option("--run-command <cmd>", "run command", "npx tsx run.ts")
   .option("--setup-command <cmd>", "setup command to run first")
-  .action(async (dir: string, opts: { testCommand: string; setupCommand?: string }) => {
+  .action(async (dir: string, opts: { tests: string; runCommand: string; setupCommand?: string }) => {
     const langConfig: LanguageConfig = {
       id: "manual",
       scaffoldDir: dir,
-      testCommand: opts.testCommand,
+      runCommand: opts.runCommand,
       setupCommand: opts.setupCommand,
     };
 
-    const result = await scoreTrialDir(path.resolve(dir), langConfig);
+    const result = await scoreTrialDir(path.resolve(dir), langConfig, path.resolve(opts.tests));
     console.log(`passed: ${result.passed}/${result.total}`);
     console.log(`\noutput:\n${result.output}`);
   });

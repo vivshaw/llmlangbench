@@ -22,6 +22,7 @@ function copyDirSync(src: string, dest: string): void {
 export async function runTrial(
   taskId: string,
   specPath: string,
+  testsPath: string,
   language: LanguageConfig,
   runConfig: RunConfig,
   trial: number,
@@ -50,11 +51,14 @@ export async function runTrial(
       "",
       "## Instructions",
       "",
-      "1. Read the existing files in the working directory to understand the scaffold and test suite.",
-      "2. Implement the solution so that all tests pass.",
-      `3. Run the tests with: ${language.testCommand}`,
-      "4. Fix any failures until all tests pass.",
-    ].join("\n");
+      "1. Read the existing files in the working directory to understand the scaffold.",
+      "2. Implement the solution in the stub file(s). Do NOT modify the runner entrypoint.",
+      `3. Your code will be tested by piping input to \`${language.runCommand}\` and comparing stdout.`,
+      `4. You can test manually by running: \`echo "1 2" | ${language.runCommand}\``,
+      language.setupCommand
+        ? `5. If you need to build first, run: \`${language.setupCommand}\``
+        : "",
+    ].filter(Boolean).join("\n");
 
     let resultMessage: SDKResultMessage | undefined;
 
@@ -72,7 +76,7 @@ export async function runTrial(
           type: "preset",
           preset: "claude_code",
           append:
-            "focus on implementing the solution and making all tests pass. Be efficient.",
+            "focus on implementing the solution in the stub file. Do not modify the runner. Be efficient.",
         },
       },
     })) {
@@ -118,7 +122,7 @@ export async function runTrial(
     }
 
     // score the result
-    const scoreResult = await scoreTrialDir(tmpDir, language);
+    const scoreResult = await scoreTrialDir(tmpDir, language, testsPath);
 
     return {
       taskId,

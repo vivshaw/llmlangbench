@@ -1,27 +1,30 @@
 {
   "id": "add-two-numbers",
   "spec": "spec.md",
+  "tests": "tests.json",
   "languages": {
     "typescript": {
-      "testCommand": "npx vitest run",
+      "runCommand": "npx tsx run.ts",
       "setupCommand": "npm install"
     },
     "python": {
-      "testCommand": ".venv/bin/python -m pytest",
-      "setupCommand": "python3 -m venv .venv && .venv/bin/pip install pytest"
+      "runCommand": "python3 run.py"
     },
     "rust": {
-      "testCommand": "cargo test"
+      "runCommand": "./target/release/add-two-numbers",
+      "setupCommand": "cargo build --release"
     },
     "go": {
-      "testCommand": "go test -v ./..."
+      "runCommand": "go run ./cmd",
+      "setupCommand": "go build ./..."
     },
     "haskell": {
-      "testCommand": "stack test",
-      "setupCommand": "stack build --test --no-run-tests"
+      "runCommand": "stack exec add-two-numbers-exe",
+      "setupCommand": "stack build"
     },
     "java": {
-      "testCommand": "./gradlew test --rerun"
+      "runCommand": "./gradlew -q run",
+      "setupCommand": "./gradlew build -x test"
     }
   }
 }

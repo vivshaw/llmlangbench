@@ -1,13 +1,30 @@
 
 /*
- * each task has a JSON spec that we'll use to load up the relevant 
+ * a single test case: input piped to stdin, expected stdout
+ */
+export interface TestCase {
+  input: string;
+  expected: string;
+  approx?: boolean;
+}
+
+/*
+ * the test bank for a task, loaded from tests.json
+ */
+export interface TestBank {
+  tests: TestCase[];
+}
+
+/*
+ * each task has a JSON spec that we'll use to load up the relevant
  */
 export interface TaskJsonFile {
   id: string;
   spec: string;
+  tests: string;
   languages: Record<
     string,
-    { testCommand: string; setupCommand?: string }
+    { runCommand: string; setupCommand?: string }
   >;
 }
 
@@ -19,18 +36,18 @@ export interface TaskJsonFile {
 export interface TaskConfig {
   id: string;
   specPath: string;
+  testsPath: string;
   languages: LanguageConfig[];
 }
 
 /*
- * each language has its own seed directory (including a test suite),
- * test command, and setup command. a working dev env will be provided, so the agent
- * only needs to worry about implementation
+ * each language has its own seed directory, run command, and setup command.
+ * the run command reads from stdin and writes to stdout.
  */
 export interface LanguageConfig {
   id: string;
   scaffoldDir: string;
-  testCommand: string;
+  runCommand: string;
   setupCommand?: string;
 }
 

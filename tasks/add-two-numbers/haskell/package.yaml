@@ -7,10 +7,9 @@ dependencies:
 library:
   source-dirs: src
 
-tests:
-  add-two-numbers-test:
-    main: Spec.hs
-    source-dirs: test
+executables:
+  add-two-numbers-exe:
+    main: Main.hs
+    source-dirs: app
     dependencies:
       - add-two-numbers
-      - hspec

@@ -2,3 +2,11 @@
 name = "add-two-numbers"
 version = "0.1.0"
 edition = "2021"
+
+[[bin]]
+name = "add-two-numbers"
+path = "src/main.rs"
+
+[lib]
+name = "add_two_numbers"
+path = "src/lib.rs"

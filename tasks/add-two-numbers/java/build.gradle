@@ -1,25 +1,16 @@
 plugins {
     id 'java'
+    id 'application'
+}
+
+application {
+    mainClass = 'Main'
+}
+
+run {
+    standardInput = System.in
 }
 
 repositories {
     mavenCentral()
-}
-
-dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.11.0'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-}
-
-test {
-    useJUnitPlatform()
-    testLogging {
-        events "passed", "failed", "skipped"
-        showStandardStreams = false
-        afterSuite { desc, result ->
-            if (!desc.parent) {
-                println "Tests run: ${result.testCount}, Failures: ${result.failedTestCount}, Errors: 0, Skipped: ${result.skippedTestCount}"
-            }
-        }
-    }
 }
