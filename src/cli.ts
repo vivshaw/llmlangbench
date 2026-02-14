@@ -37,9 +37,15 @@ async function discoverTasks(): Promise<TaskConfig[]> {
     // skip directories starting with _ (e.g. _template)
     if (taskId.startsWith("_")) continue;
     const testsPath = path.join(taskDir, "tests.json");
+    const rubricPath = path.join(taskDir, "rubric.md");
 
     if (!fs.existsSync(testsPath)) {
       console.warn(`warning: task "${taskId}" has no tests.json, skipping`);
+      continue;
+    }
+
+    if (!fs.existsSync(rubricPath)) {
+      console.warn(`warning: task "${taskId}" has no rubric.md, skipping`);
       continue;
     }
 
@@ -64,7 +70,7 @@ async function discoverTasks(): Promise<TaskConfig[]> {
         };
       });
 
-    tasks.push({ id: taskId, specPath, testsPath, languages });
+    tasks.push({ id: taskId, specPath, testsPath, rubricPath, languages });
   }
 
   return tasks;
@@ -91,6 +97,10 @@ program
   .option(
     "--language <id>",
     "run only a specific language",
+  )
+  .option(
+    "--review-model <model>",
+    "Claude model for AI code review (omit to skip review)",
   )
   .action(async (opts) => {
     const runConfig: RunConfig = {
@@ -155,12 +165,17 @@ program
             lang,
             runConfig,
             trial,
+            task.rubricPath,
+            opts.reviewModel,
           );
 
           benchmarkRun.results.push(result);
 
+          const reviewInfo = result.reviewScore != null
+            ? ` | review: ${result.reviewScore}/100`
+            : "";
           console.log(
-            `  -> ${result.testsPassed}/${result.testsTotal} tests passed | $${result.costUsd.toFixed(4)} | ${result.turns} turns | ${(result.durationMs / 1000).toFixed(1)}s`,
+            `  -> ${result.testsPassed}/${result.testsTotal} tests passed | $${result.costUsd.toFixed(4)} | ${result.turns} turns | ${(result.durationMs / 1000).toFixed(1)}s${reviewInfo}`,
           );
         }
       }

@@ -3,6 +3,7 @@ import type { SDKResultMessage } from "@anthropic-ai/claude-agent-sdk";
 import { execSync } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
+import { reviewTrialDir } from "./reviewer.js";
 import { scoreTrialDir } from "./scorer.js";
 import type { LanguageConfig, RunConfig, TrialResult } from "./types.js";
 
@@ -28,6 +29,8 @@ export async function runTrial(
   language: LanguageConfig,
   runConfig: RunConfig,
   trial: number,
+  rubricPath: string,
+  reviewModel?: string,
 ): Promise<TrialResult> {
   fs.mkdirSync(trialDir, { recursive: true });
 
@@ -144,6 +147,20 @@ export async function runTrial(
     // score the result
     const scoreResult = await scoreTrialDir(trialDir, language, testsPath);
 
+    // AI code review (best-effort — failure shouldn't tank the trial)
+    let reviewScore: number | undefined;
+    let reviewText: string | undefined;
+
+    if (reviewModel) {
+      try {
+        const review = await reviewTrialDir(trialDir, specPath, rubricPath, reviewModel);
+        reviewScore = review.score;
+        reviewText = review.review;
+      } catch (err: unknown) {
+        reviewText = `review failed: ${err instanceof Error ? err.message : String(err)}`;
+      }
+    }
+
     return {
       taskId,
       language: language.id,
@@ -157,6 +174,8 @@ export async function runTrial(
       testsPassed: scoreResult.passed,
       testsTotal: scoreResult.total,
       testOutput: scoreResult.output,
+      reviewScore,
+      reviewText,
     };
   } catch (err: unknown) {
     // SDK process crash — record the error and continue the run

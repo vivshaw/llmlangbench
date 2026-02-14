@@ -9,6 +9,7 @@ interface LangSummary {
   avgDurationMs: number;
   avgInputTokens: number;
   avgOutputTokens: number;
+  avgReviewScore?: number;
 }
 
 interface TaskSummary {
@@ -17,6 +18,7 @@ interface TaskSummary {
   trials: number;
   passRate: number;
   avgCostUsd: number;
+  avgReviewScore?: number;
 }
 
 function avg(nums: number[]): number {
@@ -45,6 +47,13 @@ function passRate(results: TrialResult[]): number {
   return avg(rates);
 }
 
+function avgReviewScore(results: TrialResult[]): number | undefined {
+  const scores = results
+    .map((r) => r.reviewScore)
+    .filter((s): s is number => s != null);
+  return scores.length > 0 ? avg(scores) : undefined;
+}
+
 function buildLanguageSummaries(results: TrialResult[]): LangSummary[] {
   const byLang = groupBy(results, (r) => r.language);
   const summaries: LangSummary[] = [];
@@ -59,6 +68,7 @@ function buildLanguageSummaries(results: TrialResult[]): LangSummary[] {
       avgDurationMs: avg(trials.map((t) => t.durationMs)),
       avgInputTokens: avg(trials.map((t) => t.inputTokens)),
       avgOutputTokens: avg(trials.map((t) => t.outputTokens)),
+      avgReviewScore: avgReviewScore(trials),
     });
   }
 
@@ -77,6 +87,7 @@ function buildTaskSummaries(results: TrialResult[]): TaskSummary[] {
       trials: trials.length,
       passRate: passRate(trials),
       avgCostUsd: avg(trials.map((t) => t.costUsd)),
+      avgReviewScore: avgReviewScore(trials),
     });
   }
 
@@ -112,13 +123,13 @@ export function printReport(run: BenchmarkRun): void {
 
   console.log("\n## per-language summary\n");
   console.log(
-    `${pad("language", 14)} ${rpad("trials", 7)} ${rpad("pass%", 7)} ${rpad("avg cost", 10)} ${rpad("avg turns", 10)} ${rpad("avg time", 10)}`,
+    `${pad("language", 14)} ${rpad("trials", 7)} ${rpad("pass%", 7)} ${rpad("avg cost", 10)} ${rpad("avg turns", 10)} ${rpad("avg time", 10)} ${rpad("review", 8)}`,
   );
-  console.log("-".repeat(62));
+  console.log("-".repeat(72));
 
   for (const s of langSummaries) {
     console.log(
-      `${pad(s.language, 14)} ${rpad(String(s.trials), 7)} ${rpad((s.avgPassRate * 100).toFixed(1) + "%", 7)} ${rpad("$" + s.avgCostUsd.toFixed(4), 10)} ${rpad(s.avgTurns.toFixed(1), 10)} ${rpad(formatDuration(s.avgDurationMs), 10)}`,
+      `${pad(s.language, 14)} ${rpad(String(s.trials), 7)} ${rpad((s.avgPassRate * 100).toFixed(1) + "%", 7)} ${rpad("$" + s.avgCostUsd.toFixed(4), 10)} ${rpad(s.avgTurns.toFixed(1), 10)} ${rpad(formatDuration(s.avgDurationMs), 10)} ${rpad(s.avgReviewScore != null ? s.avgReviewScore.toFixed(0) : "-", 8)}`,
     );
   }
 
@@ -127,13 +138,13 @@ export function printReport(run: BenchmarkRun): void {
 
   console.log("\n## per-task breakdown\n");
   console.log(
-    `${pad("task", 20)} ${pad("language", 14)} ${rpad("trials", 7)} ${rpad("pass%", 7)} ${rpad("avg cost", 10)}`,
+    `${pad("task", 20)} ${pad("language", 14)} ${rpad("trials", 7)} ${rpad("pass%", 7)} ${rpad("avg cost", 10)} ${rpad("review", 8)}`,
   );
-  console.log("-".repeat(60));
+  console.log("-".repeat(70));
 
   for (const s of taskSummaries) {
     console.log(
-      `${pad(s.taskId, 20)} ${pad(s.language, 14)} ${rpad(String(s.trials), 7)} ${rpad((s.passRate * 100).toFixed(1) + "%", 7)} ${rpad("$" + s.avgCostUsd.toFixed(4), 10)}`,
+      `${pad(s.taskId, 20)} ${pad(s.language, 14)} ${rpad(String(s.trials), 7)} ${rpad((s.passRate * 100).toFixed(1) + "%", 7)} ${rpad("$" + s.avgCostUsd.toFixed(4), 10)} ${rpad(s.avgReviewScore != null ? s.avgReviewScore.toFixed(0) : "-", 8)}`,
     );
   }
 

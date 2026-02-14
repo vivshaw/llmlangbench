@@ -23,6 +23,7 @@ export interface TaskConfig {
   id: string;
   specPath: string;
   testsPath: string;
+  rubricPath: string;
   languages: LanguageConfig[];
 }
 
@@ -84,6 +85,8 @@ export interface TrialResult {
   testsPassed: number;
   testsTotal: number;
   testOutput: string;
+  reviewScore?: number;
+  reviewText?: string;
 }
 
 /*
