@@ -5,11 +5,23 @@
     "testCommand": "npx vitest run",
     "testFramework": "Vitest"
   },
+  "javascript": {
+    "runCommand": "node run.js",
+    "preTrialCommand": "npm install",
+    "testCommand": "npx vitest run",
+    "testFramework": "Vitest"
+  },
   "python": {
     "runCommand": "python3 run.py",
     "preTrialCommand": "python3 -m venv .venv && .venv/bin/pip install pytest",
     "testCommand": ".venv/bin/python -m pytest",
     "testFramework": "pytest"
+  },
+  "ruby": {
+    "runCommand": "ruby run.rb",
+    "preTrialCommand": "bundle install",
+    "testCommand": "bundle exec rspec",
+    "testFramework": "RSpec"
   },
   "rust": {
     "runCommand": "./target/release/{taskId}",

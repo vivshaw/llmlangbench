@@ -1,0 +1,7 @@
+{
+  "name": "add-two-numbers",
+  "version": "1.0.0",
+  "devDependencies": {
+    "vitest": "^3.0.0"
+  }
+}

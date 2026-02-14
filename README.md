@@ -4,6 +4,19 @@ benchmark LLM coding performance across programming languages.
 
 > **status**: early development. everything below is subject to change.
 
+## languages
+
+| language | why it's interesting |
+|---|---|
+| Python | the lingua franca of LLM training data — expected baseline |
+| TypeScript | massively in-distribution, types to keep things in line |
+| JavaScript | just like TypeScript, but no types- how important are types to agent success? |
+| Ruby | elegant, concise, expressive, but smaller training corpus than Python/JS, and highly dynamic |
+| Go | simple language with strict conventions — do LLMs thrive with less ambiguity? |
+| Rust | borrow checker and ownership are hard for humans, but provide strong guarantees — how do LLMs fare? |
+| Haskell | pure FP with a powerful type system — a real test of reasoning ability |
+| Java | verbose and ceremony-heavy — can LLMs handle the boilerplate? |
+
 ## language configuration
 
 languages are configured in `languages.json` at the project root. each entry defines how to install dependencies, run code, and run tests for that language:
