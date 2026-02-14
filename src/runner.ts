@@ -152,11 +152,19 @@ export async function runTrial(
     let reviewText: string | undefined;
 
     try {
-      const review = await reviewTrialDir(trialDir, specPath, rubricPath, reviewModel);
+      const review = await reviewTrialDir(trialDir, specPath, rubricPath, reviewModel, scaffoldDir);
       reviewScore = review.score;
       reviewText = review.review;
     } catch (err: unknown) {
       reviewText = `review failed: ${err instanceof Error ? err.message : String(err)}`;
+    }
+
+    // sum cumulative tokens across all models used in the session
+    let inputTokens = 0;
+    let outputTokens = 0;
+    for (const mu of Object.values(resultMessage.modelUsage)) {
+      inputTokens += mu.inputTokens;
+      outputTokens += mu.outputTokens;
     }
 
     return {
@@ -165,8 +173,8 @@ export async function runTrial(
       trial,
       status,
       costUsd: resultMessage.total_cost_usd,
-      inputTokens: resultMessage.usage.input_tokens,
-      outputTokens: resultMessage.usage.output_tokens,
+      inputTokens,
+      outputTokens,
       turns: resultMessage.num_turns,
       durationMs,
       testsPassed: scoreResult.passed,

@@ -34,7 +34,7 @@ const SKIP_EXTENSIONS = new Set([
   ".lock",
 ]);
 
-function collectSourceFiles(dir: string): Map<string, string> {
+export function collectSourceFiles(dir: string): Map<string, string> {
   const files = new Map<string, string>();
 
   function walk(current: string, relPrefix: string): void {
@@ -72,13 +72,24 @@ export async function reviewTrialDir(
   specPath: string,
   rubricPath: string,
   model = "claude-sonnet-4-5-20250929",
+  scaffoldDir?: string,
 ): Promise<ReviewResult> {
   const client = new Anthropic();
 
   const spec = fs.readFileSync(specPath, "utf-8");
   const rubric = fs.readFileSync(rubricPath, "utf-8");
 
-  const sourceFiles = collectSourceFiles(dir);
+  let sourceFiles = collectSourceFiles(dir);
+
+  // only review files the agent wrote or modified (exclude unchanged scaffold)
+  if (scaffoldDir) {
+    const scaffold = collectSourceFiles(scaffoldDir);
+    sourceFiles = new Map(
+      Array.from(sourceFiles).filter(
+        ([relPath, content]) => !scaffold.has(relPath) || scaffold.get(relPath) !== content,
+      ),
+    );
+  }
 
   if (sourceFiles.size === 0) {
     return { score: 0, review: "No source files found in trial directory." };
