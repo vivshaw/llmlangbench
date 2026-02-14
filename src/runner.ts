@@ -84,6 +84,8 @@ export async function runTrial(
     ].filter(Boolean).join("\n");
 
     let resultMessage: SDKResultMessage | undefined;
+    const transcriptPath = path.join(trialDir, "transcript.jsonl");
+    const transcriptStream = fs.createWriteStream(transcriptPath);
 
     for await (const message of query({
       prompt,
@@ -103,10 +105,13 @@ export async function runTrial(
         },
       },
     })) {
+      transcriptStream.write(JSON.stringify(message) + "\n");
       if (message.type === "result") {
         resultMessage = message;
       }
     }
+
+    transcriptStream.end();
 
     const durationMs = Date.now() - startMs;
 
