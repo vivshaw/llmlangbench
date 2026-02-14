@@ -6,14 +6,14 @@ benchmark LLM coding performance across programming languages.
 
 | language | why it's interesting |
 |---|---|
-| Python | the lingua franca of LLM training data — expected baseline |
+| Python | the lingua franca of LLM training data. expected baseline |
 | TypeScript | massively in-distribution, types to keep things in line |
-| JavaScript | just like TypeScript, but no types- how important are types to agent success? |
+| JavaScript | just like TypeScript, but no types. how important are types to agent success? |
 | Ruby | elegant, concise, expressive, but smaller training corpus than Python/JS, and highly dynamic |
-| Go | simple language with strict conventions — do LLMs thrive with less ambiguity? |
-| Rust | borrow checker and ownership are hard for humans, but provide strong guarantees — how do LLMs fare? |
-| Haskell | pure FP with a powerful type system — a real test of reasoning ability |
-| Java | verbose and ceremony-heavy — can LLMs handle the boilerplate? |
+| Go | simple language with strict conventions. do LLMs thrive with less ambiguity? |
+| Rust | borrow checker and ownership are hard for humans, but provide strong guarantees. how do LLMs fare? |
+| Haskell | pure FP with a powerful type system. a real test of reasoning ability |
+| Java | verbose and ceremony-heavy. can LLMs handle the boilerplate? |
 
 ## prerequisites
 
@@ -77,11 +77,9 @@ npx tsx src/cli.ts score results/{runId}/{task}/{lang}/trial-1 --tests tasks/{ta
 
 trials are evaluated on two axes:
 
-**test scoring** — black-box stdin/stdout testing. the harness pipes each test case's `input` to the runner entrypoint and compares stdout against `expected`. supports exact match and approximate float comparison.
+**test scoring:** black-box stdin/stdout testing. the harness pipes each test case's `input` to the runner entrypoint and compares stdout against `expected`. supports exact match and approximate float comparison.
 
-**AI code review** — after tests, an LLM reads the agent's source files and evaluates them against the task's `rubric.md`. produces a score (0-100) and written review. this captures code quality, idiom usage, simplicity, and other things tests can't measure. the review model is configurable separately from the trial model.
-
-**AI language analysis** — the report includes AI-generated per-language narrative summaries and an overall cross-language comparison. these synthesize the stats and review texts into readable analysis covering strengths, weaknesses, paradigm patterns, and cost tradeoffs.
+**AI code review:** after tests, an LLM reads the agent's source files and evaluates them against the task's `rubric.md`. produces a score (0-100) and written review. this captures code quality, idiom usage, simplicity, and other things tests can't measure. the review model is configurable separately from the trial model.
 
 ## results
 
