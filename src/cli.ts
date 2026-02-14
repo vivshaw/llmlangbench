@@ -237,4 +237,87 @@ program
     console.log(`\noutput:\n${result.output}`);
   });
 
+program
+  .command("transcript")
+  .description("display a trial transcript in human-readable format")
+  .argument("<path>", "path to transcript.jsonl or trial directory")
+  .action((inputPath: string) => {
+    const resolved = path.resolve(inputPath);
+    const jsonlPath = resolved.endsWith(".jsonl")
+      ? resolved
+      : path.join(resolved, "transcript.jsonl");
+
+    if (!fs.existsSync(jsonlPath)) {
+      console.error(`transcript not found: ${jsonlPath}`);
+      process.exit(1);
+    }
+
+    const lines = fs.readFileSync(jsonlPath, "utf-8").trim().split("\n");
+
+    const RESET = "\x1b[0m";
+    const BOLD = "\x1b[1m";
+    const DIM = "\x1b[2m";
+    const CYAN = "\x1b[36m";
+    const GREEN = "\x1b[32m";
+    const YELLOW = "\x1b[33m";
+    const MAGENTA = "\x1b[35m";
+    const BLUE = "\x1b[34m";
+
+    const SEP = `${DIM}${"─".repeat(80)}${RESET}`;
+
+    for (const line of lines) {
+      const msg = JSON.parse(line);
+
+      if (msg.type === "system" && msg.subtype === "init") {
+        console.log(SEP);
+        console.log(`${BOLD}${CYAN}[system]${RESET} session started`);
+        console.log(`  cwd: ${DIM}${msg.cwd}${RESET}`);
+        console.log(`  tools: ${DIM}${msg.tools.join(", ")}${RESET}`);
+        console.log(SEP);
+      } else if (msg.type === "assistant") {
+        const content = msg.message?.content ?? [];
+        for (const block of content) {
+          if (block.type === "text" && block.text) {
+            console.log(`\n${BOLD}${GREEN}[assistant]${RESET} ${block.text}`);
+          } else if (block.type === "tool_use") {
+            const inputStr = typeof block.input === "object"
+              ? JSON.stringify(block.input, null, 2)
+                  .split("\n")
+                  .map((l: string) => `  ${l}`)
+                  .join("\n")
+              : String(block.input);
+            console.log(
+              `\n${BOLD}${YELLOW}[tool]${RESET} ${BOLD}${block.name}${RESET}`,
+            );
+            console.log(`${DIM}${inputStr}${RESET}`);
+          }
+        }
+      } else if (msg.type === "user") {
+        const content = msg.message?.content ?? [];
+        for (const block of content) {
+          if (block.type === "tool_result") {
+            const result = typeof block.content === "string"
+              ? block.content
+              : JSON.stringify(block.content);
+            // truncate long outputs
+            const maxLen = 500;
+            const display = result.length > maxLen
+              ? result.slice(0, maxLen) + `\n${DIM}... (${result.length} chars total)${RESET}`
+              : result;
+            console.log(`${MAGENTA}[result]${RESET} ${DIM}${display}${RESET}`);
+          }
+        }
+      } else if (msg.type === "result") {
+        console.log(SEP);
+        console.log(
+          `${BOLD}${BLUE}[done]${RESET} ${msg.subtype} | ${msg.num_turns} turns | ${(msg.duration_ms / 1000).toFixed(1)}s`,
+        );
+        if (msg.result) {
+          console.log(`\n${msg.result}`);
+        }
+        console.log(SEP);
+      }
+    }
+  });
+
 program.parse();

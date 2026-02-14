@@ -56,6 +56,9 @@ npx tsx src/cli.ts report results/{runId}
 # use a different review model for the report
 npx tsx src/cli.ts report results/{runId} --review-model claude-haiku-4-5-20251001
 
+# view an agent's transcript from a trial
+npx tsx src/cli.ts transcript results/{runId}/{task}/{lang}/trial-1
+
 # re-score an existing trial directory
 npx tsx src/cli.ts score results/{runId}/{task}/{lang}/trial-1 --tests tasks/{task}/tests.json
 ```
