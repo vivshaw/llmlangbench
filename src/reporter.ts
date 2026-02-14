@@ -1,3 +1,4 @@
+import Anthropic from "@anthropic-ai/sdk";
 import type { BenchmarkRun, TrialResult } from "./types.js";
 
 interface LangSummary {
@@ -110,43 +111,179 @@ function formatDuration(ms: number): string {
   return `${(ms / 1000).toFixed(1)}s`;
 }
 
-export function printReport(run: BenchmarkRun): void {
-  console.log(`\nbenchmark Run: ${run.id}`);
-  console.log(`model: ${run.config.model}`);
-  console.log(
-    `config: ${run.config.trials} trials, max ${run.config.maxTurns} turns, $${run.config.maxBudgetUsd} budget`,
+/**
+ * generate the tables/stats section of the report as a markdown string.
+ */
+export function generateReport(run: BenchmarkRun): string {
+  const lines: string[] = [];
+
+  lines.push(`# Benchmark Run: ${run.id}`);
+  lines.push("");
+  lines.push(`**Model:** ${run.config.model}`);
+  lines.push(
+    `**Config:** ${run.config.trials} trials, max ${run.config.maxTurns} turns, $${run.config.maxBudgetUsd} budget`,
   );
-  console.log(`total results: ${run.results.length}`);
+  lines.push(`**Total results:** ${run.results.length}`);
 
   // language summary table
   const langSummaries = buildLanguageSummaries(run.results);
 
-  console.log("\n## per-language summary\n");
-  console.log(
-    `${pad("language", 14)} ${rpad("trials", 7)} ${rpad("pass%", 7)} ${rpad("avg cost", 10)} ${rpad("avg turns", 10)} ${rpad("avg time", 10)} ${rpad("review", 8)}`,
+  lines.push("");
+  lines.push("## Per-Language Summary");
+  lines.push("");
+  lines.push(
+    `| ${pad("Language", 14)} | ${rpad("Trials", 7)} | ${rpad("Pass%", 7)} | ${rpad("Avg Cost", 10)} | ${rpad("Avg Turns", 10)} | ${rpad("Avg Time", 10)} | ${rpad("Review", 8)} |`,
   );
-  console.log("-".repeat(72));
+  lines.push(
+    `| ${"-".repeat(14)} | ${"-".repeat(7)}: | ${"-".repeat(7)}: | ${"-".repeat(10)}: | ${"-".repeat(10)}: | ${"-".repeat(10)}: | ${"-".repeat(8)}: |`,
+  );
 
   for (const s of langSummaries) {
-    console.log(
-      `${pad(s.language, 14)} ${rpad(String(s.trials), 7)} ${rpad((s.avgPassRate * 100).toFixed(1) + "%", 7)} ${rpad("$" + s.avgCostUsd.toFixed(4), 10)} ${rpad(s.avgTurns.toFixed(1), 10)} ${rpad(formatDuration(s.avgDurationMs), 10)} ${rpad(s.avgReviewScore != null ? s.avgReviewScore.toFixed(0) : "-", 8)}`,
+    lines.push(
+      `| ${pad(s.language, 14)} | ${rpad(String(s.trials), 7)} | ${rpad((s.avgPassRate * 100).toFixed(1) + "%", 7)} | ${rpad("$" + s.avgCostUsd.toFixed(4), 10)} | ${rpad(s.avgTurns.toFixed(1), 10)} | ${rpad(formatDuration(s.avgDurationMs), 10)} | ${rpad(s.avgReviewScore != null ? s.avgReviewScore.toFixed(0) : "-", 8)} |`,
     );
   }
 
   // task breakdown table
   const taskSummaries = buildTaskSummaries(run.results);
 
-  console.log("\n## per-task breakdown\n");
-  console.log(
-    `${pad("task", 20)} ${pad("language", 14)} ${rpad("trials", 7)} ${rpad("pass%", 7)} ${rpad("avg cost", 10)} ${rpad("review", 8)}`,
+  lines.push("");
+  lines.push("## Per-Task Breakdown");
+  lines.push("");
+  lines.push(
+    `| ${pad("Task", 20)} | ${pad("Language", 14)} | ${rpad("Trials", 7)} | ${rpad("Pass%", 7)} | ${rpad("Avg Cost", 10)} | ${rpad("Review", 8)} |`,
   );
-  console.log("-".repeat(70));
+  lines.push(
+    `| ${"-".repeat(20)} | ${"-".repeat(14)} | ${"-".repeat(7)}: | ${"-".repeat(7)}: | ${"-".repeat(10)}: | ${"-".repeat(8)}: |`,
+  );
 
   for (const s of taskSummaries) {
-    console.log(
-      `${pad(s.taskId, 20)} ${pad(s.language, 14)} ${rpad(String(s.trials), 7)} ${rpad((s.passRate * 100).toFixed(1) + "%", 7)} ${rpad("$" + s.avgCostUsd.toFixed(4), 10)} ${rpad(s.avgReviewScore != null ? s.avgReviewScore.toFixed(0) : "-", 8)}`,
+    lines.push(
+      `| ${pad(s.taskId, 20)} | ${pad(s.language, 14)} | ${rpad(String(s.trials), 7)} | ${rpad((s.passRate * 100).toFixed(1) + "%", 7)} | ${rpad("$" + s.avgCostUsd.toFixed(4), 10)} | ${rpad(s.avgReviewScore != null ? s.avgReviewScore.toFixed(0) : "-", 8)} |`,
     );
   }
 
-  console.log("");
+  lines.push("");
+  return lines.join("\n");
+}
+
+/**
+ * build per-language data sections used as context for AI narrative calls.
+ */
+function buildLangDataSections(run: BenchmarkRun): {
+  sections: string[];
+  languages: string[];
+} {
+  const byLang = groupBy(run.results, (r) => r.language);
+  const sections: string[] = [];
+
+  for (const [language, trials] of byLang) {
+    const pr = passRate(trials);
+    const avgCost = avg(trials.map((t) => t.costUsd));
+    const avgTurns = avg(trials.map((t) => t.turns));
+    const avgDuration = avg(trials.map((t) => t.durationMs));
+    const reviewScore = avgReviewScore(trials);
+
+    let section = `### ${language}\n`;
+    section += `- Trials: ${trials.length}\n`;
+    section += `- Pass rate: ${(pr * 100).toFixed(1)}%\n`;
+    section += `- Avg cost: $${avgCost.toFixed(4)}\n`;
+    section += `- Avg turns: ${avgTurns.toFixed(1)}\n`;
+    section += `- Avg time: ${formatDuration(avgDuration)}\n`;
+    if (reviewScore != null) {
+      section += `- Avg review score: ${reviewScore.toFixed(0)}/100\n`;
+    }
+
+    const reviews = trials
+      .filter((t) => t.reviewText)
+      .map((t) => `  - [${t.taskId}, trial ${t.trial}]: ${t.reviewText}`);
+    if (reviews.length > 0) {
+      section += `- Review excerpts:\n${reviews.join("\n")}\n`;
+    }
+
+    sections.push(section);
+  }
+
+  return { sections, languages: Array.from(byLang.keys()) };
+}
+
+interface AnalysisResult {
+  languages: Map<string, string>;
+  overall: string;
+}
+
+/**
+ * single Claude API call that generates both per-language narratives
+ * and an overall cross-language summary.
+ */
+export async function generateAnalysis(
+  run: BenchmarkRun,
+  model: string,
+): Promise<AnalysisResult> {
+  const client = new Anthropic();
+  const { sections, languages } = buildLangDataSections(run);
+
+  const prompt = `You are analyzing benchmark results for an LLM coding benchmark that tests how well ${run.config.model} writes code in different programming languages.
+
+Here is the per-language data:
+
+${sections.join("\n")}
+
+Write two things:
+
+1. **Per-language narratives:** For each language, a concise analytical paragraph (3-5 sentences) that synthesizes the statistics and review feedback into a readable narrative. Focus on notable strengths, weaknesses, and patterns. Compare languages where relevant.
+
+2. **Overall summary:** 2-4 paragraphs synthesizing insights from comparing all languages. Cover which languages the model handles best and worst (and why), cross-cutting patterns (e.g. paradigms, type systems, ecosystems), cost/efficiency tradeoffs, and any surprising or notable takeaways.
+
+Respond with a JSON object containing:
+- "languages": an object where keys are the language names (exactly: ${languages.map((l) => `"${l}"`).join(", ")}) and values are the narrative paragraphs
+- "overall": the overall summary as a single string (use \\n for paragraph breaks)
+
+Respond ONLY with the JSON object, no other text.`;
+
+  const response = await client.messages.create({
+    model,
+    max_tokens: 4096,
+    temperature: 0,
+    messages: [{ role: "user", content: prompt }],
+  });
+
+  const textBlock = response.content.find((b) => b.type === "text");
+  const raw = textBlock?.text ?? "";
+
+  const jsonMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/) ?? [null, raw];
+  const jsonStr = (jsonMatch[1] ?? raw).trim();
+
+  const parsed = JSON.parse(jsonStr) as {
+    languages: Record<string, string>;
+    overall: string;
+  };
+
+  return {
+    languages: new Map(Object.entries(parsed.languages)),
+    overall: parsed.overall,
+  };
+}
+
+/**
+ * build the full report markdown, including AI-generated
+ * per-language narrative analysis and overall summary.
+ */
+export async function buildReport(
+  run: BenchmarkRun,
+  reviewModel: string,
+): Promise<string> {
+  let report = generateReport(run);
+
+  console.log("generating analysis...");
+  const analysis = await generateAnalysis(run, reviewModel);
+
+  report += "\n## Language Analysis\n";
+  for (const [language, narrative] of analysis.languages) {
+    report += `\n### ${language}\n\n${narrative}\n`;
+  }
+
+  report += "\n## Overall Summary\n\n" + analysis.overall + "\n";
+
+  return report;
 }

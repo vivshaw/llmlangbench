@@ -47,11 +47,14 @@ npx tsx src/cli.ts run
 # run a specific task and language
 npx tsx src/cli.ts run --task add-two-numbers --language python --trials 1
 
-# use a different model or enable AI review
+# use a different model or a different review model
 npx tsx src/cli.ts run --model claude-sonnet-4-5-20250929 --review-model claude-haiku-4-5-20251001
 
-# print a report from a previous run
+# print a report from a previous run (regenerates AI analysis)
 npx tsx src/cli.ts report results/{runId}
+
+# use a different review model for the report
+npx tsx src/cli.ts report results/{runId} --review-model claude-haiku-4-5-20251001
 
 # re-score an existing trial directory
 npx tsx src/cli.ts score results/{runId}/{task}/{lang}/trial-1 --tests tasks/{task}/tests.json
@@ -65,7 +68,7 @@ npx tsx src/cli.ts score results/{runId}/{task}/{lang}/trial-1 --tests tasks/{ta
 | `--max-budget` | `5` | max USD per trial |
 | `--task` | all | run only a specific task |
 | `--language` | all | run only a specific language |
-| `--review-model` | none (skip review) | model for AI code review |
+| `--review-model` | `claude-sonnet-4-5-20250929` | model for AI code review and analysis |
 
 ## scoring
 
@@ -75,6 +78,8 @@ trials are evaluated on two axes:
 
 **AI code review** — after tests, an LLM reads the agent's source files and evaluates them against the task's `rubric.md`. produces a score (0-100) and written review. this captures code quality, idiom usage, simplicity, and other things tests can't measure. the review model is configurable separately from the trial model.
 
+**AI language analysis** — the report includes AI-generated per-language narrative summaries and an overall cross-language comparison. these synthesize the stats and review texts into readable analysis covering strengths, weaknesses, paradigm patterns, and cost tradeoffs.
+
 ## results
 
 each run is saved to `results/{runId}/` with the trial working directories preserved, so you can inspect the results:
@@ -82,6 +87,7 @@ each run is saved to `results/{runId}/` with the trial working directories prese
 ```
 results/2026-02-14T10-07-58-099Z/
   run.json                          # scores, costs, timing
+  report.md                         # markdown report (tables + AI analysis if --review-model was used)
   add-two-numbers/
     python/trial-1/                 # the agent's working directory
     typescript/trial-1/

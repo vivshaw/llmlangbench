@@ -4,7 +4,7 @@ import * as path from "node:path";
 import { glob } from "node:fs/promises";
 import { runTrial } from "./runner.js";
 import { scoreTrialDir } from "./scorer.js";
-import { printReport } from "./reporter.js";
+import { buildReport } from "./reporter.js";
 import type {
   BenchmarkRun,
   LanguageConfig,
@@ -100,7 +100,8 @@ program
   )
   .option(
     "--review-model <model>",
-    "Claude model for AI code review (omit to skip review)",
+    "Claude model for AI code review and analysis",
+    "claude-sonnet-4-5-20250929",
   )
   .action(async (opts) => {
     const runConfig: RunConfig = {
@@ -173,7 +174,7 @@ program
 
           const reviewInfo = result.reviewScore != null
             ? ` | review: ${result.reviewScore}/100`
-            : "";
+            : " | review: n/a";
           console.log(
             `  -> ${result.testsPassed}/${result.testsTotal} tests passed | $${result.costUsd.toFixed(4)} | ${result.turns} turns | ${(result.durationMs / 1000).toFixed(1)}s${reviewInfo}`,
           );
@@ -186,15 +187,24 @@ program
     fs.writeFileSync(outPath, JSON.stringify(benchmarkRun, null, 2));
     console.log(`\nresults written to: ${outPath}`);
 
-    // Print summary
-    printReport(benchmarkRun);
+    // build report, write to file, and print
+    const report = await buildReport(benchmarkRun, opts.reviewModel);
+    const reportPath = path.join(runDir, "report.md");
+    fs.writeFileSync(reportPath, report);
+    console.log(`report written to: ${reportPath}`);
+    console.log(report);
   });
 
 program
   .command("report")
   .description("print summary report from a run directory")
   .argument("<dir>", "path to run directory (contains run.json)")
-  .action((dir: string) => {
+  .option(
+    "--review-model <model>",
+    "Claude model for AI language analysis",
+    "claude-sonnet-4-5-20250929",
+  )
+  .action(async (dir: string, opts: { reviewModel: string }) => {
     const runJsonPath = path.resolve(dir, "run.json");
     if (!fs.existsSync(runJsonPath)) {
       console.error(`run.json not found in: ${path.resolve(dir)}`);
@@ -203,7 +213,11 @@ program
 
     const raw = fs.readFileSync(runJsonPath, "utf-8");
     const run: BenchmarkRun = JSON.parse(raw);
-    printReport(run);
+    const report = await buildReport(run, opts.reviewModel);
+    const reportPath = path.resolve(dir, "report.md");
+    fs.writeFileSync(reportPath, report);
+    console.log(`report written to: ${reportPath}`);
+    console.log(report);
   });
 
 program

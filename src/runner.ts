@@ -30,7 +30,7 @@ export async function runTrial(
   runConfig: RunConfig,
   trial: number,
   rubricPath: string,
-  reviewModel?: string,
+  reviewModel: string,
 ): Promise<TrialResult> {
   fs.mkdirSync(trialDir, { recursive: true });
 
@@ -151,14 +151,12 @@ export async function runTrial(
     let reviewScore: number | undefined;
     let reviewText: string | undefined;
 
-    if (reviewModel) {
-      try {
-        const review = await reviewTrialDir(trialDir, specPath, rubricPath, reviewModel);
-        reviewScore = review.score;
-        reviewText = review.review;
-      } catch (err: unknown) {
-        reviewText = `review failed: ${err instanceof Error ? err.message : String(err)}`;
-      }
+    try {
+      const review = await reviewTrialDir(trialDir, specPath, rubricPath, reviewModel);
+      reviewScore = review.score;
+      reviewText = review.review;
+    } catch (err: unknown) {
+      reviewText = `review failed: ${err instanceof Error ? err.message : String(err)}`;
     }
 
     return {
