@@ -2,8 +2,6 @@
 
 benchmark LLM coding performance across programming languages.
 
-> **status**: early development. everything below is subject to change.
-
 ## languages
 
 | language | why it's interesting |
@@ -38,6 +36,58 @@ run `./scripts/check-prereqs.sh` to verify your system is ready.
 | Haskell | stack |
 | Java | JDK (java, javac) |
 
+## running benchmarks
+
+```bash
+npm install
+
+# run all tasks across all languages
+npx tsx src/cli.ts run
+
+# run a specific task and language
+npx tsx src/cli.ts run --task add-two-numbers --language python --trials 1
+
+# use a different model or enable AI review
+npx tsx src/cli.ts run --model claude-sonnet-4-5-20250929 --review-model claude-haiku-4-5-20251001
+
+# print a report from a previous run
+npx tsx src/cli.ts report results/{runId}
+
+# re-score an existing trial directory
+npx tsx src/cli.ts score results/{runId}/{task}/{lang}/trial-1 --tests tasks/{task}/tests.json
+```
+
+| flag | default | description |
+|---|---|---|
+| `-m, --model` | `claude-sonnet-4-5-20250929` | model for trial agents |
+| `-t, --trials` | `3` | number of trials per task/language combo |
+| `--max-turns` | `30` | max agent turns per trial |
+| `--max-budget` | `5` | max USD per trial |
+| `--task` | all | run only a specific task |
+| `--language` | all | run only a specific language |
+| `--review-model` | none (skip review) | model for AI code review |
+
+## scoring
+
+trials are evaluated on two axes:
+
+**test scoring** — black-box stdin/stdout testing. the harness pipes each test case's `input` to the runner entrypoint and compares stdout against `expected`. supports exact match and approximate float comparison.
+
+**AI code review** — after tests, an LLM reads the agent's source files and evaluates them against the task's `rubric.md`. produces a score (0-100) and written review. this captures code quality, idiom usage, simplicity, and other things tests can't measure. the review model is configurable separately from the trial model.
+
+## results
+
+each run is saved to `results/{runId}/` with the trial working directories preserved, so you can inspect the results:
+
+```
+results/2026-02-14T10-07-58-099Z/
+  run.json                          # scores, costs, timing
+  add-two-numbers/
+    python/trial-1/                 # the agent's working directory
+    typescript/trial-1/
+    ...
+```
+
 ## language configuration
 
 languages are configured in `languages.json` at the project root. each entry defines how to install dependencies, run code, and run tests for that language:
@@ -63,26 +113,39 @@ languages are configured in `languages.json` at the project root. each entry def
 
 commands support `{taskId}` interpolation for languages where the binary name depends on the task (e.g. `"./target/release/{taskId}"` for Rust).
 
-to add a new language:
+### adding a new language
+
 1. add an entry to `languages.json`
 2. create a scaffold directory for each task that supports it
 
-## results
+## tasks
 
-each run is saved to `results/{runId}/` with the trial working directories preserved, so you can inspect the results:
+each task lives in `tasks/{taskId}/` and contains:
 
-```
-results/2026-02-14T10-07-58-099Z/
-  run.json                          # scores, costs, timing
-  add-two-numbers/
-    python/trial-1/                 # the agent's working directory
-    typescript/trial-1/
-    ...
-```
+| file | purpose |
+|---|---|
+| `spec.md` | the task specification shown to the agent |
+| `tests.json` | black-box test cases (input/expected pairs for stdin/stdout scoring) |
+| `rubric.md` | criteria for AI code review scoring |
+| `{language}/` | scaffold directory per language (stub files, runner entrypoint, config) |
 
-## TBD
+the agent sees the spec and scaffold, then follows a TDD workflow: write tests, run them, implement, iterate until passing.
 
-- how tasks work
-- how scoring works
-- how to run benchmarks
-- how to add new tasks
+### adding a new task
+
+1. copy `tasks/_template/` to `tasks/{your-task-id}/`
+2. write `spec.md` with the task description and requirements
+3. write `tests.json` with stdin/stdout test cases:
+   ```json
+   {
+     "tests": [
+       { "input": "1 2\n", "expected": "3" },
+       { "input": "0.1 0.2\n", "expected": "0.3", "approx": true }
+     ]
+   }
+   ```
+4. write `rubric.md` with task-specific review criteria
+5. create a scaffold directory for each language you want to support (e.g. `python/`, `typescript/`), each containing:
+   - a runner entrypoint (`run.py`, `run.ts`, etc.) that reads stdin and writes to stdout
+   - stub implementation file(s) for the agent to fill in
+   - any config files needed (package.json, Cargo.toml, etc.)
