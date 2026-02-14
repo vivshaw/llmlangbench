@@ -17,6 +17,27 @@ benchmark LLM coding performance across programming languages.
 | Haskell | pure FP with a powerful type system — a real test of reasoning ability |
 | Java | verbose and ceremony-heavy — can LLMs handle the boilerplate? |
 
+## prerequisites
+
+run `./scripts/check-prereqs.sh` to verify your system is ready.
+
+**harness:**
+- [Node.js](https://nodejs.org/) (>= 18) — runs the benchmark harness itself
+- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) — the trial agents run via the Claude Agent SDK
+- `ANTHROPIC_API_KEY` environment variable set
+
+**languages:**
+| language | requires |
+|---|---|
+| TypeScript | node, npm |
+| JavaScript | node, npm |
+| Python | python3, venv module (`apt install python3-venv` on Debian/Ubuntu) |
+| Ruby | ruby, bundler |
+| Rust | cargo |
+| Go | go |
+| Haskell | stack |
+| Java | JDK (java, javac) |
+
 ## language configuration
 
 languages are configured in `languages.json` at the project root. each entry defines how to install dependencies, run code, and run tests for that language:
