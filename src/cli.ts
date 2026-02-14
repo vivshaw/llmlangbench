@@ -30,7 +30,10 @@ async function discoverTasks(): Promise<TaskConfig[]> {
       id: langId,
       scaffoldDir: path.join(taskDir, langId),
       runCommand: langConf.runCommand,
+      installCommand: langConf.installCommand,
       setupCommand: langConf.setupCommand,
+      testCommand: langConf.testCommand,
+      testFramework: langConf.testFramework,
     }));
 
     tasks.push({
@@ -172,6 +175,9 @@ program
       scaffoldDir: dir,
       runCommand: opts.runCommand,
       setupCommand: opts.setupCommand,
+      testCommand: "",
+      testFramework: "",
+      installCommand: undefined,
     };
 
     const result = await scoreTrialDir(path.resolve(dir), langConfig, path.resolve(opts.tests));

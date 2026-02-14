@@ -13,3 +13,11 @@ executables:
     source-dirs: app
     dependencies:
       - add-two-numbers
+
+tests:
+  add-two-numbers-test:
+    main: Spec.hs
+    source-dirs: test
+    dependencies:
+      - add-two-numbers
+      - hspec

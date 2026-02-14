@@ -5,26 +5,38 @@
   "languages": {
     "typescript": {
       "runCommand": "npx tsx run.ts",
-      "setupCommand": "npm install"
+      "installCommand": "npm install",
+      "testCommand": "npx vitest run",
+      "testFramework": "Vitest"
     },
     "python": {
-      "runCommand": "python3 run.py"
+      "runCommand": "python3 run.py",
+      "installCommand": "python3 -m venv .venv && .venv/bin/pip install pytest",
+      "testCommand": ".venv/bin/python -m pytest",
+      "testFramework": "pytest"
     },
     "rust": {
       "runCommand": "./target/release/add-two-numbers",
-      "setupCommand": "cargo build --release"
+      "setupCommand": "cargo build --release",
+      "testCommand": "cargo test",
+      "testFramework": "cargo test (built-in #[test])"
     },
     "go": {
       "runCommand": "go run ./cmd",
-      "setupCommand": "go build ./..."
+      "testCommand": "go test -v ./...",
+      "testFramework": "go test (testing package)"
     },
     "haskell": {
       "runCommand": "stack exec add-two-numbers-exe",
-      "setupCommand": "stack build"
+      "setupCommand": "stack build",
+      "testCommand": "stack test",
+      "testFramework": "HSpec"
     },
     "java": {
       "runCommand": "./gradlew -q run",
-      "setupCommand": "./gradlew build -x test"
+      "setupCommand": "./gradlew build -x test",
+      "testCommand": "./gradlew test",
+      "testFramework": "JUnit 5"
     }
   }
 }

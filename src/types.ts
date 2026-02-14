@@ -24,7 +24,13 @@ export interface TaskJsonFile {
   tests: string;
   languages: Record<
     string,
-    { runCommand: string; setupCommand?: string }
+    {
+      runCommand: string;
+      installCommand?: string;
+      setupCommand?: string;
+      testCommand: string;
+      testFramework: string;
+    }
   >;
 }
 
@@ -43,12 +49,18 @@ export interface TaskConfig {
 /*
  * each language has its own seed directory, run command, and setup command.
  * the run command reads from stdin and writes to stdout.
+ * testCommand/testFramework are provided to the trial agent for TDD.
+ * installCommand runs before the agent to install dependencies.
+ * setupCommand runs before scoring to build/compile.
  */
 export interface LanguageConfig {
   id: string;
   scaffoldDir: string;
   runCommand: string;
+  installCommand?: string;
   setupCommand?: string;
+  testCommand: string;
+  testFramework: string;
 }
 
 /*

@@ -1,5 +1,6 @@
 import { query } from "@anthropic-ai/claude-agent-sdk";
 import type { SDKResultMessage } from "@anthropic-ai/claude-agent-sdk";
+import { execSync } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import * as os from "node:os";
@@ -37,6 +38,15 @@ export async function runTrial(
     // copy scaffold into temp dir
     copyDirSync(language.scaffoldDir, tmpDir);
 
+    // install dependencies before handing off to the agent
+    if (language.installCommand) {
+      execSync(language.installCommand, {
+        cwd: tmpDir,
+        stdio: "pipe",
+        timeout: 120_000,
+      });
+    }
+
     // read the task spec
     const spec = fs.readFileSync(specPath, "utf-8");
 
@@ -49,15 +59,26 @@ export async function runTrial(
       "",
       spec,
       "",
+      "## Development Environment",
+      "",
+      `- **Language**: ${language.id}`,
+      `- **Test framework**: ${language.testFramework}`,
+      `- **Run tests**: \`${language.testCommand}\``,
+      language.setupCommand
+        ? `- **Setup/build**: \`${language.setupCommand}\``
+        : "",
+      "",
       "## Instructions",
       "",
+      "Follow a test-driven development (TDD) approach:",
+      "",
       "1. Read the existing files in the working directory to understand the scaffold.",
-      "2. Implement the solution in the stub file(s). Do NOT modify the runner entrypoint.",
-      `3. Your code will be tested by piping input to \`${language.runCommand}\` and comparing stdout.`,
-      `4. You can test manually by running: \`echo "1 2" | ${language.runCommand}\``,
-      language.setupCommand
-        ? `5. If you need to build first, run: \`${language.setupCommand}\``
-        : "",
+      "2. Write a thorough test suite first, covering the requirements in the spec — including edge cases.",
+      `3. Run your tests with \`${language.testCommand}\` to confirm they fail (since the implementation is a stub).`,
+      "4. Implement the solution in the stub file(s). Do NOT modify the runner entrypoint (run.* file).",
+      "5. Run your tests again and iterate until all tests pass.",
+      "",
+      "Your solution will be scored separately, so focus on writing good tests and a correct implementation.",
     ].filter(Boolean).join("\n");
 
     let resultMessage: SDKResultMessage | undefined;
@@ -76,7 +97,7 @@ export async function runTrial(
           type: "preset",
           preset: "claude_code",
           append:
-            "focus on implementing the solution in the stub file. Do not modify the runner. Be efficient.",
+            "Use TDD: write tests first, then implement. Do not modify the runner (run.* file). Be efficient.",
         },
       },
     })) {
