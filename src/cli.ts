@@ -102,6 +102,9 @@ program
     };
 
     const runId = new Date().toISOString().replace(/[:.]/g, "-");
+    const runDir = path.join(RESULTS_DIR, runId);
+    fs.mkdirSync(runDir, { recursive: true });
+
     const benchmarkRun: BenchmarkRun = {
       id: runId,
       timestamp: new Date().toISOString(),
@@ -142,11 +145,13 @@ program
           );
 
           const scaffoldDir = path.join(path.dirname(task.specPath), lang.id);
+          const trialDir = path.join(runDir, task.id, lang.id, `trial-${trial}`);
           const result = await runTrial(
             task.id,
             task.specPath,
             task.testsPath,
             scaffoldDir,
+            trialDir,
             lang,
             runConfig,
             trial,
@@ -161,9 +166,8 @@ program
       }
     }
 
-    // Write results
-    fs.mkdirSync(RESULTS_DIR, { recursive: true });
-    const outPath = path.join(RESULTS_DIR, `${runId}.json`);
+    // write results
+    const outPath = path.join(runDir, "run.json");
     fs.writeFileSync(outPath, JSON.stringify(benchmarkRun, null, 2));
     console.log(`\nresults written to: ${outPath}`);
 
@@ -173,16 +177,16 @@ program
 
 program
   .command("report")
-  .description("print summary report from a results JSON file")
-  .argument("<file>", "path to results JSON file")
-  .action((file: string) => {
-    const filePath = path.resolve(file);
-    if (!fs.existsSync(filePath)) {
-      console.error(`file not found: ${filePath}`);
+  .description("print summary report from a run directory")
+  .argument("<dir>", "path to run directory (contains run.json)")
+  .action((dir: string) => {
+    const runJsonPath = path.resolve(dir, "run.json");
+    if (!fs.existsSync(runJsonPath)) {
+      console.error(`run.json not found in: ${path.resolve(dir)}`);
       process.exit(1);
     }
 
-    const raw = fs.readFileSync(filePath, "utf-8");
+    const raw = fs.readFileSync(runJsonPath, "utf-8");
     const run: BenchmarkRun = JSON.parse(raw);
     printReport(run);
   });

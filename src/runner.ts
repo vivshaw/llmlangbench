@@ -3,7 +3,6 @@ import type { SDKResultMessage } from "@anthropic-ai/claude-agent-sdk";
 import { execSync } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import * as os from "node:os";
 import { scoreTrialDir } from "./scorer.js";
 import type { LanguageConfig, RunConfig, TrialResult } from "./types.js";
 
@@ -25,24 +24,23 @@ export async function runTrial(
   specPath: string,
   testsPath: string,
   scaffoldDir: string,
+  trialDir: string,
   language: LanguageConfig,
   runConfig: RunConfig,
   trial: number,
 ): Promise<TrialResult> {
-  const tmpDir = fs.mkdtempSync(
-    path.join(os.tmpdir(), `llmlangbench-${taskId}-${language.id}-`),
-  );
+  fs.mkdirSync(trialDir, { recursive: true });
 
   const startMs = Date.now();
 
   try {
-    // copy scaffold into temp dir
-    copyDirSync(scaffoldDir, tmpDir);
+    // copy scaffold into trial dir
+    copyDirSync(scaffoldDir, trialDir);
 
     // install dependencies before handing off to the agent
     if (language.preTrialCommand) {
       execSync(language.preTrialCommand, {
-        cwd: tmpDir,
+        cwd: trialDir,
         stdio: "pipe",
         timeout: 120_000,
       });
@@ -53,7 +51,7 @@ export async function runTrial(
 
     // build prompt
     const prompt = [
-      `You are working in ${tmpDir}.`,
+      `You are working in ${trialDir}.`,
       `Your task is to implement a solution in ${language.id}.`,
       "",
       "## Task Specification",
@@ -88,7 +86,7 @@ export async function runTrial(
       prompt,
       options: {
         model: runConfig.model,
-        cwd: tmpDir,
+        cwd: trialDir,
         allowedTools: runConfig.allowedTools,
         maxTurns: runConfig.maxTurns,
         maxBudgetUsd: runConfig.maxBudgetUsd,
@@ -144,7 +142,7 @@ export async function runTrial(
     }
 
     // score the result
-    const scoreResult = await scoreTrialDir(tmpDir, language, testsPath);
+    const scoreResult = await scoreTrialDir(trialDir, language, testsPath);
 
     return {
       taskId,
@@ -177,8 +175,5 @@ export async function runTrial(
       testsTotal: 0,
       testOutput: `SDK error: ${err instanceof Error ? err.message : String(err)}`,
     };
-  } finally {
-    // clean up temp dir
-    fs.rmSync(tmpDir, { recursive: true, force: true });
   }
 }

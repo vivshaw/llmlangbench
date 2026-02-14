@@ -33,9 +33,22 @@ to add a new language:
 1. add an entry to `languages.json`
 2. create a scaffold directory for each task that supports it
 
+## results
+
+each run is saved to `results/{runId}/` with the trial working directories preserved, so you can inspect the results:
+
+```
+results/2026-02-14T10-07-58-099Z/
+  run.json                          # scores, costs, timing
+  add-two-numbers/
+    python/trial-1/                 # the agent's working directory
+    typescript/trial-1/
+    ...
+```
+
 ## TBD
 
 - how tasks work
 - how scoring works
-- ow to run benchmarks
+- how to run benchmarks
 - how to add new tasks
