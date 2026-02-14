@@ -1,0 +1,27 @@
+{
+  "id": "add-two-numbers",
+  "spec": "spec.md",
+  "languages": {
+    "typescript": {
+      "testCommand": "npx vitest run",
+      "setupCommand": "npm install"
+    },
+    "python": {
+      "testCommand": ".venv/bin/python -m pytest",
+      "setupCommand": "python3 -m venv .venv && .venv/bin/pip install pytest"
+    },
+    "rust": {
+      "testCommand": "cargo test"
+    },
+    "go": {
+      "testCommand": "go test -v ./..."
+    },
+    "haskell": {
+      "testCommand": "stack test",
+      "setupCommand": "stack build --test --no-run-tests"
+    },
+    "java": {
+      "testCommand": "./gradlew test --rerun"
+    }
+  }
+}
