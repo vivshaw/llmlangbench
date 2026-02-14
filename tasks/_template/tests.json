@@ -1,0 +1,6 @@
+{
+  "tests": [
+    { "input": "...", "expected": "..." },
+    { "input": "...", "expected": "...", "approx": true }
+  ]
+}

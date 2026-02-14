@@ -1,0 +1,37 @@
+{
+  "typescript": {
+    "runCommand": "npx tsx run.ts",
+    "preTrialCommand": "npm install",
+    "testCommand": "npx vitest run",
+    "testFramework": "Vitest"
+  },
+  "python": {
+    "runCommand": "python3 run.py",
+    "preTrialCommand": "python3 -m venv .venv && .venv/bin/pip install pytest",
+    "testCommand": ".venv/bin/python -m pytest",
+    "testFramework": "pytest"
+  },
+  "rust": {
+    "runCommand": "./target/release/{taskId}",
+    "preScoringCommand": "cargo build --release",
+    "testCommand": "cargo test",
+    "testFramework": "cargo test (built-in #[test])"
+  },
+  "go": {
+    "runCommand": "go run ./cmd",
+    "testCommand": "go test -v ./...",
+    "testFramework": "go test (testing package)"
+  },
+  "haskell": {
+    "runCommand": "stack exec {taskId}-exe",
+    "preScoringCommand": "stack build",
+    "testCommand": "stack test",
+    "testFramework": "HSpec"
+  },
+  "java": {
+    "runCommand": "./gradlew -q run",
+    "preScoringCommand": "./gradlew build -x test",
+    "testCommand": "./gradlew test",
+    "testFramework": "JUnit 5"
+  }
+}

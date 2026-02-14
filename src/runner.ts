@@ -24,6 +24,7 @@ export async function runTrial(
   taskId: string,
   specPath: string,
   testsPath: string,
+  scaffoldDir: string,
   language: LanguageConfig,
   runConfig: RunConfig,
   trial: number,
@@ -36,11 +37,11 @@ export async function runTrial(
 
   try {
     // copy scaffold into temp dir
-    copyDirSync(language.scaffoldDir, tmpDir);
+    copyDirSync(scaffoldDir, tmpDir);
 
     // install dependencies before handing off to the agent
-    if (language.installCommand) {
-      execSync(language.installCommand, {
+    if (language.preTrialCommand) {
+      execSync(language.preTrialCommand, {
         cwd: tmpDir,
         stdio: "pipe",
         timeout: 120_000,
@@ -64,8 +65,8 @@ export async function runTrial(
       `- **Language**: ${language.id}`,
       `- **Test framework**: ${language.testFramework}`,
       `- **Run tests**: \`${language.testCommand}\``,
-      language.setupCommand
-        ? `- **Setup/build**: \`${language.setupCommand}\``
+      language.preScoringCommand
+        ? `- **Setup/build**: \`${language.preScoringCommand}\``
         : "",
       "",
       "## Instructions",

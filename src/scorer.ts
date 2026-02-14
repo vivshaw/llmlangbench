@@ -51,16 +51,16 @@ function runOneTest(
 
 export async function scoreTrialDir(
   dir: string,
-  language: LanguageConfig,
+  language: Pick<LanguageConfig, "runCommand" | "preScoringCommand">,
   testsPath: string,
 ): Promise<ScoreResult> {
   const raw = fs.readFileSync(testsPath, "utf-8");
   const testBank: TestBank = JSON.parse(raw);
 
   // run setup command if present
-  if (language.setupCommand) {
+  if (language.preScoringCommand) {
     try {
-      execSync(language.setupCommand, {
+      execSync(language.preScoringCommand, {
         cwd: dir,
         stdio: "pipe",
         timeout: 120_000,
@@ -73,7 +73,7 @@ export async function scoreTrialDir(
       return {
         passed: 0,
         total: testBank.tests.length,
-        output: `Setup failed: ${msg.slice(0, 2000)}`,
+        output: `setup failed: ${msg.slice(0, 2000)}`,
       };
     }
   }

@@ -10,38 +10,61 @@ import type {
   LanguageConfig,
   RunConfig,
   TaskConfig,
-  TaskJsonFile,
 } from "./types.js";
 
-const TASKS_DIR = path.resolve(import.meta.dirname, "..", "tasks");
-const RESULTS_DIR = path.resolve(import.meta.dirname, "..", "results");
+const ROOT_DIR = path.resolve(import.meta.dirname, "..");
+const TASKS_DIR = path.join(ROOT_DIR, "tasks");
+const RESULTS_DIR = path.join(ROOT_DIR, "results");
+const LANGUAGES_PATH = path.join(ROOT_DIR, "languages.json");
+
+function interpolate(template: string, taskId: string): string {
+  return template.replaceAll("{taskId}", taskId);
+}
+
+function loadLanguages(): Record<string, Omit<LanguageConfig, "id">> {
+  const raw = fs.readFileSync(LANGUAGES_PATH, "utf-8");
+  return JSON.parse(raw);
+}
 
 async function discoverTasks(): Promise<TaskConfig[]> {
+  const languageDefs = loadLanguages();
   const tasks: TaskConfig[] = [];
 
-  for await (const taskJsonPath of glob(path.join(TASKS_DIR, "*/task.json"))) {
-    const raw = fs.readFileSync(taskJsonPath, "utf-8");
-    const taskJson: TaskJsonFile = JSON.parse(raw);
-    const taskDir = path.dirname(taskJsonPath);
+  for await (const specPath of glob(path.join(TASKS_DIR, "*/spec.md"))) {
+    const taskDir = path.dirname(specPath);
+    const taskId = path.basename(taskDir);
 
-    const languages: LanguageConfig[] = Object.entries(
-      taskJson.languages,
-    ).map(([langId, langConf]) => ({
-      id: langId,
-      scaffoldDir: path.join(taskDir, langId),
-      runCommand: langConf.runCommand,
-      installCommand: langConf.installCommand,
-      setupCommand: langConf.setupCommand,
-      testCommand: langConf.testCommand,
-      testFramework: langConf.testFramework,
-    }));
+    // skip directories starting with _ (e.g. _template)
+    if (taskId.startsWith("_")) continue;
+    const testsPath = path.join(taskDir, "tests.json");
 
-    tasks.push({
-      id: taskJson.id,
-      specPath: path.join(taskDir, taskJson.spec),
-      testsPath: path.join(taskDir, taskJson.tests),
-      languages,
-    });
+    if (!fs.existsSync(testsPath)) {
+      console.warn(`warning: task "${taskId}" has no tests.json, skipping`);
+      continue;
+    }
+
+    // discover languages by matching subdirectories to languages.json keys
+    const entries = fs.readdirSync(taskDir, { withFileTypes: true });
+    const languages: LanguageConfig[] = entries
+      .filter((e) => e.isDirectory() && e.name in languageDefs)
+      .map((e) => {
+        const langId = e.name;
+        const def = languageDefs[langId]!;
+        return {
+          id: langId,
+          runCommand: interpolate(def.runCommand, taskId),
+          preTrialCommand: def.preTrialCommand
+            ? interpolate(def.preTrialCommand, taskId)
+            : undefined,
+          preScoringCommand: def.preScoringCommand
+            ? interpolate(def.preScoringCommand, taskId)
+            : undefined,
+          testCommand: interpolate(def.testCommand, taskId),
+          testFramework: def.testFramework,
+        };
+      });
+
+    tasks.push({ id: taskId, specPath, testsPath, languages });
   }
 
   return tasks;
@@ -118,10 +141,12 @@ program
             `running: ${task.id} / ${lang.id} (trial ${trial}/${runConfig.trials})`,
           );
 
+          const scaffoldDir = path.join(path.dirname(task.specPath), lang.id);
           const result = await runTrial(
             task.id,
             task.specPath,
             task.testsPath,
+            scaffoldDir,
             lang,
             runConfig,
             trial,
@@ -168,19 +193,13 @@ program
   .argument("<dir>", "path to trial directory")
   .requiredOption("--tests <path>", "path to tests.json file")
   .option("--run-command <cmd>", "run command", "npx tsx run.ts")
-  .option("--setup-command <cmd>", "setup command to run first")
-  .action(async (dir: string, opts: { tests: string; runCommand: string; setupCommand?: string }) => {
-    const langConfig: LanguageConfig = {
-      id: "manual",
-      scaffoldDir: dir,
-      runCommand: opts.runCommand,
-      setupCommand: opts.setupCommand,
-      testCommand: "",
-      testFramework: "",
-      installCommand: undefined,
-    };
-
-    const result = await scoreTrialDir(path.resolve(dir), langConfig, path.resolve(opts.tests));
+  .option("--pre-scoring-command <cmd>", "command to run before scoring (e.g. build step)")
+  .action(async (dir: string, opts: { tests: string; runCommand: string; preScoringCommand?: string }) => {
+    const result = await scoreTrialDir(
+      path.resolve(dir),
+      { runCommand: opts.runCommand, preScoringCommand: opts.preScoringCommand },
+      path.resolve(opts.tests),
+    );
     console.log(`passed: ${result.passed}/${result.total}`);
     console.log(`\noutput:\n${result.output}`);
   });
