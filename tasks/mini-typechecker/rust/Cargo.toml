@@ -1,0 +1,12 @@
+[package]
+name = "mini-typechecker"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "mini-typechecker"
+path = "src/main.rs"
+
+[lib]
+name = "mini_typechecker"
+path = "src/lib.rs"

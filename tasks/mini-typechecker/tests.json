@@ -1,0 +1,179 @@
+{
+  "tests": [
+    {
+      "name": "integer literal",
+      "input": "42",
+      "expected": "Int"
+    },
+    {
+      "name": "boolean literal true",
+      "input": "true",
+      "expected": "Bool"
+    },
+    {
+      "name": "boolean literal false",
+      "input": "false",
+      "expected": "Bool"
+    },
+    {
+      "name": "addition",
+      "input": "1 + 2",
+      "expected": "Int"
+    },
+    {
+      "name": "subtraction",
+      "input": "10 - 3",
+      "expected": "Int"
+    },
+    {
+      "name": "multiplication",
+      "input": "2 * 3",
+      "expected": "Int"
+    },
+    {
+      "name": "nested arithmetic",
+      "input": "1 + 2 * 3",
+      "expected": "Int"
+    },
+    {
+      "name": "arithmetic type error",
+      "input": "1 + true",
+      "expected": "type error"
+    },
+    {
+      "name": "comparison",
+      "input": "1 == 2",
+      "expected": "Bool"
+    },
+    {
+      "name": "comparison type error",
+      "input": "true == false",
+      "expected": "type error"
+    },
+    {
+      "name": "simple if",
+      "input": "if true then 1 else 2",
+      "expected": "Int"
+    },
+    {
+      "name": "if with bool result",
+      "input": "if true then false else true",
+      "expected": "Bool"
+    },
+    {
+      "name": "if branch type mismatch",
+      "input": "if true then 1 else false",
+      "expected": "type error"
+    },
+    {
+      "name": "if non-bool condition",
+      "input": "if 1 then 2 else 3",
+      "expected": "type error"
+    },
+    {
+      "name": "if with comparison condition",
+      "input": "if 1 == 2 then 3 else 4",
+      "expected": "Int"
+    },
+    {
+      "name": "simple let",
+      "input": "let x = 5 in x + 1",
+      "expected": "Int"
+    },
+    {
+      "name": "let with bool",
+      "input": "let b = true in if b then 1 else 0",
+      "expected": "Int"
+    },
+    {
+      "name": "nested let",
+      "input": "let x = 1 in let y = 2 in x + y",
+      "expected": "Int"
+    },
+    {
+      "name": "unbound variable",
+      "input": "x + 1",
+      "expected": "type error"
+    },
+    {
+      "name": "simple lambda",
+      "input": "fn x => x + 1",
+      "expected": "Int -> Int"
+    },
+    {
+      "name": "lambda returning bool",
+      "input": "fn x => x == 0",
+      "expected": "Int -> Bool"
+    },
+    {
+      "name": "simple application",
+      "input": "(fn x => x + 1) 5",
+      "expected": "Int"
+    },
+    {
+      "name": "application type error",
+      "input": "(fn x => x + 1) true",
+      "expected": "type error"
+    },
+    {
+      "name": "identity function",
+      "input": "fn x => x",
+      "expected": "a -> a"
+    },
+    {
+      "name": "const function",
+      "input": "fn x => fn y => x",
+      "expected": "a -> b -> a"
+    },
+    {
+      "name": "apply function",
+      "input": "fn f => fn x => f x",
+      "expected": "(a -> b) -> a -> b"
+    },
+    {
+      "name": "let with lambda",
+      "input": "let f = fn x => x + 1 in f 5",
+      "expected": "Int"
+    },
+    {
+      "name": "let polymorphism - basic",
+      "input": "let id = fn x => x in id 42",
+      "expected": "Int"
+    },
+    {
+      "name": "let polymorphism - two uses same type",
+      "input": "let id = fn x => x in id 42 + id 1",
+      "expected": "Int"
+    },
+    {
+      "name": "let polymorphism - two uses different types",
+      "input": "let id = fn x => x in if id true then id 42 else 0",
+      "expected": "Int"
+    },
+    {
+      "name": "higher-order function",
+      "input": "let apply = fn f => fn x => f x in apply (fn x => x + 1) 5",
+      "expected": "Int"
+    },
+    {
+      "name": "multi-arg via currying",
+      "input": "fn x => fn y => x + y",
+      "expected": "Int -> Int -> Int"
+    },
+    {
+      "name": "application to non-function",
+      "input": "42 5",
+      "expected": "type error"
+    },
+    {
+      "name": "complex expression",
+      "input": "let add = fn x => fn y => x + y in let inc = add 1 in inc 5",
+      "expected": "Int"
+    },
+    {
+      "name": "let polymorphism - polymorphic result",
+      "input": "let const = fn x => fn y => x in const",
+      "expected": "a -> b -> a"
+    }
+  ]
+}
