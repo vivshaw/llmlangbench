@@ -289,6 +289,126 @@
       "name": "deep let nesting stress test",
       "input": "let a = 1 in let b = a + 1 in let c = b + 1 in let d = c + 1 in let e = d + 1 in let f = e + 1 in let g = f + 1 in let h = g + 1 in let i = h + 1 in let j = i + 1 in j",
       "expected": "Int"
+    },
+    {
+      "name": "pair construction",
+      "input": "(1, true)",
+      "expected": "Int * Bool"
+    },
+    {
+      "name": "fst projection",
+      "input": "fst (1, true)",
+      "expected": "Int"
+    },
+    {
+      "name": "snd projection",
+      "input": "snd (1, true)",
+      "expected": "Bool"
+    },
+    {
+      "name": "polymorphic pair",
+      "input": "fn x => (x, x)",
+      "expected": "a -> a * a"
+    },
+    {
+      "name": "swap pair",
+      "input": "fn p => (snd p, fst p)",
+      "expected": "a * b -> b * a"
+    },
+    {
+      "name": "fst on non-pair",
+      "input": "fst 42",
+      "expected": "type error"
+    },
+    {
+      "name": "left-nested pair parenthesization",
+      "input": "((1, 2), 3)",
+      "expected": "(Int * Int) * Int"
+    },
+    {
+      "name": "right-nested pair no parens",
+      "input": "(1, (2, 3))",
+      "expected": "Int * Int * Int"
+    },
+    {
+      "name": "pair projection constrains to Int",
+      "input": "fn x => fst x + snd x",
+      "expected": "Int * Int -> Int"
+    },
+    {
+      "name": "polymorphic pair with projection",
+      "input": "let f = fn x => (x, x) in fst (f 1)",
+      "expected": "Int"
+    },
+    {
+      "name": "polymorphic pair used at different types",
+      "input": "let f = fn x => (x, x) in (fst (f 1), fst (f true))",
+      "expected": "Int * Bool"
+    },
+    {
+      "name": "pair with function inside",
+      "input": "fn x => ((fn y => y), x)",
+      "expected": "a -> (b -> b) * a"
+    },
+    {
+      "name": "swap applied to concrete pair",
+      "input": "let swap = fn p => (snd p, fst p) in swap (1, true)",
+      "expected": "Bool * Int"
+    },
+    {
+      "name": "mutual recursion - even/odd",
+      "input": "let rec even = fn n => if n == 0 then true else odd (n - 1) and odd = fn n => if n == 0 then false else even (n - 1) in even",
+      "expected": "Int -> Bool"
+    },
+    {
+      "name": "mutual recursion - simple delegation",
+      "input": "let rec f = fn x => g x and g = fn x => x in f 42",
+      "expected": "Int"
+    },
+    {
+      "name": "mutual recursion - unconstrained loop",
+      "input": "let rec f = fn x => g x and g = fn x => f x in f",
+      "expected": "a -> b"
+    },
+    {
+      "name": "mutual recursion - use second binding",
+      "input": "let rec even = fn n => if n == 0 then true else odd (n - 1) and odd = fn n => if n == 0 then false else even (n - 1) in odd",
+      "expected": "Int -> Bool"
+    },
+    {
+      "name": "type annotation - restricts polymorphism",
+      "input": "fn (x: Int) => x",
+      "expected": "Int -> Int"
+    },
+    {
+      "name": "type annotation - consistent with usage",
+      "input": "fn (x: Int) => x + 1",
+      "expected": "Int -> Int"
+    },
+    {
+      "name": "type annotation - conflicts with usage",
+      "input": "fn (x: Bool) => x + 1",
+      "expected": "type error"
+    },
+    {
+      "name": "type annotation - function type",
+      "input": "fn (x: Int -> Int) => x 5",
+      "expected": "(Int -> Int) -> Int"
+    },
+    {
+      "name": "type annotation - product type",
+      "input": "fn (x: Int * Bool) => fst x",
+      "expected": "Int * Bool -> Int"
+    },
+    {
+      "name": "type annotation - multiple annotated params",
+      "input": "fn (x: Int) => fn (y: Bool) => (x, y)",
+      "expected": "Int -> Bool -> Int * Bool"
+    },
+    {
+      "name": "exponential type growth via pairs",
+      "input": "let f = fn x => (x, x) in let g = fn x => f (f x) in g",
+      "expected": "a -> (a * a) * a * a"
     }
   ]
 }
