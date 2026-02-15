@@ -99,6 +99,46 @@
       "name": "three duplicate headers",
       "input": "GET / HTTP/1.1\r\nHost: example.com\r\nX-Custom: one\r\nX-Custom: two\r\nX-Custom: three\r\n\r\n",
       "expected": "GET / HTTP/1.1\nhost: example.com\nx-custom: one, two, three\n"
+    },
+    {
+      "name": "header value contains colon",
+      "input": "GET / HTTP/1.1\r\nHost: example.com\r\nX-URL: http://example.com:8080/path\r\n\r\n",
+      "expected": "GET / HTTP/1.1\nhost: example.com\nx-url: http://example.com:8080/path\n"
+    },
+    {
+      "name": "duplicate headers with different casing combined",
+      "input": "GET / HTTP/1.1\r\nHost: example.com\r\nAccept: text/html\r\naccept: application/json\r\n\r\n",
+      "expected": "GET / HTTP/1.1\naccept: text/html, application/json\nhost: example.com\n"
+    },
+    {
+      "name": "PATCH method",
+      "input": "PATCH /resource/1 HTTP/1.1\r\nHost: api.example.com\r\nContent-Type: application/json\r\nContent-Length: 16\r\n\r\n{\"status\":\"new\"}",
+      "expected": "PATCH /resource/1 HTTP/1.1\ncontent-type: application/json\nhost: api.example.com\n\n{\"status\":\"new\"}"
+    },
+    {
+      "name": "chunk size in uppercase hex",
+      "input": "POST /data HTTP/1.1\r\nHost: example.com\r\nTransfer-Encoding: chunked\r\n\r\n1A\r\nabcdefghijklmnopqrstuvwxyz\r\n0\r\n\r\n",
+      "expected": "POST /data HTTP/1.1\nhost: example.com\n\nabcdefghijklmnopqrstuvwxyz"
+    },
+    {
+      "name": "header with no space after colon",
+      "input": "GET / HTTP/1.1\r\nHost:example.com\r\nAccept:text/html\r\n\r\n",
+      "expected": "GET / HTTP/1.1\naccept: text/html\nhost: example.com\n"
+    },
+    {
+      "name": "body contains CRLF sequences",
+      "input": "POST /submit HTTP/1.1\r\nHost: example.com\r\nContent-Type: text/plain\r\nContent-Length: 15\r\n\r\nline1\r\nline2\r\nend",
+      "expected": "POST /submit HTTP/1.1\ncontent-type: text/plain\nhost: example.com\n\nline1\r\nline2\r\nend"
+    },
+    {
+      "name": "request with no headers except host",
+      "input": "OPTIONS * HTTP/1.1\r\nHost: example.com\r\n\r\n",
+      "expected": "OPTIONS * HTTP/1.1\nhost: example.com\n"
+    },
+    {
+      "name": "Transfer-Encoding header excluded from output",
+      "input": "POST /data HTTP/1.1\r\nHost: example.com\r\nAccept: */*\r\nTransfer-Encoding: chunked\r\n\r\n3\r\nfoo\r\n3\r\nbar\r\n0\r\n\r\n",
+      "expected": "POST /data HTTP/1.1\naccept: */*\nhost: example.com\n\nfoobar"
     }
   ]
 }

@@ -74,6 +74,46 @@
       "name": "complex pipeline with locks and channels",
       "input": "workers 2\nA: compute, lock R1, send ch1, compute, unlock R1\nB: compute, recv ch1, lock R1, compute, unlock R1, send ch2\nC: recv ch2, compute",
       "expected": "0 A compute\n0 B compute\n1 A lock R1\n2 A send ch1\n2 B recv ch1\n3 A compute\n4 A unlock R1\n4 B lock R1\n5 B compute\n6 B unlock R1\n7 B send ch2\n7 C recv ch2\n8 C compute\ndone"
+    },
+    {
+      "name": "alphabetical ordering blocks middle sender",
+      "input": "workers 2\nA: send ch1\nB: send ch1\nC: recv ch1",
+      "expected": "0 A send ch1\n0 C recv ch1\n1 B send ch1\ndone"
+    },
+    {
+      "name": "recv before send with single worker",
+      "input": "workers 1\nA: recv ch1\nB: send ch1",
+      "expected": "0 B send ch1\n1 A recv ch1\ndone"
+    },
+    {
+      "name": "provisional unlock enables later lock",
+      "input": "workers 3\nA: lock R1, unlock R1\nB: lock R1, unlock R1\nC: compute",
+      "expected": "0 A lock R1\n0 C compute\n1 A unlock R1\n1 B lock R1\n2 B unlock R1\ndone"
+    },
+    {
+      "name": "progress then deadlock",
+      "input": "workers 2\nA: compute, recv ch1\nB: compute, recv ch2",
+      "expected": "0 A compute\n0 B compute\ndeadlock A B"
+    },
+    {
+      "name": "five processes serialized by single worker",
+      "input": "workers 1\nA: compute\nB: compute\nC: compute\nD: compute\nE: compute",
+      "expected": "0 A compute\n1 B compute\n2 C compute\n3 D compute\n4 E compute\ndone"
+    },
+    {
+      "name": "self send then recv on same channel",
+      "input": "workers 1\nA: send ch1, recv ch1",
+      "expected": "0 A send ch1\n1 A recv ch1\ndone"
+    },
+    {
+      "name": "cascading lock handoff across three processes",
+      "input": "workers 3\nA: lock R1, unlock R1\nB: lock R1, compute, unlock R1\nC: lock R1, compute, unlock R1",
+      "expected": "0 A lock R1\n1 A unlock R1\n1 B lock R1\n2 B compute\n3 B unlock R1\n3 C lock R1\n4 C compute\n5 C unlock R1\ndone"
+    },
+    {
+      "name": "two senders two receivers fan-out",
+      "input": "workers 2\nA: send ch1, send ch1\nB: recv ch1\nC: recv ch1",
+      "expected": "0 A send ch1\n0 B recv ch1\n1 A send ch1\n1 C recv ch1\ndone"
     }
   ]
 }

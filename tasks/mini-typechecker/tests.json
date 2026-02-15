@@ -174,6 +174,61 @@
       "name": "let polymorphism - polymorphic result",
       "input": "let const = fn x => fn y => x in const",
       "expected": "a -> b -> a"
+    },
+    {
+      "name": "occurs check - self application",
+      "input": "fn x => x x",
+      "expected": "type error"
+    },
+    {
+      "name": "let polymorphism enables self application",
+      "input": "let f = fn x => x in f f",
+      "expected": "a -> a"
+    },
+    {
+      "name": "lambda params are monomorphic - no self apply",
+      "input": "fn f => f f",
+      "expected": "type error"
+    },
+    {
+      "name": "variable shadowing",
+      "input": "let x = 1 in let x = true in x",
+      "expected": "Bool"
+    },
+    {
+      "name": "if condition constrains param type",
+      "input": "fn x => if x then x else x",
+      "expected": "Bool -> Bool"
+    },
+    {
+      "name": "function composition",
+      "input": "let compose = fn f => fn g => fn x => f (g x) in compose",
+      "expected": "(a -> b) -> (c -> a) -> c -> b"
+    },
+    {
+      "name": "identity applied to identity",
+      "input": "(fn x => x) (fn y => y)",
+      "expected": "a -> a"
+    },
+    {
+      "name": "if branches constrain multiple params",
+      "input": "fn x => fn y => if x then y else 0",
+      "expected": "Bool -> Int -> Int"
+    },
+    {
+      "name": "monomorphic function applied to wrong type",
+      "input": "let f = fn x => x + 1 in f true",
+      "expected": "type error"
+    },
+    {
+      "name": "polymorphic self-application via let",
+      "input": "let id = fn x => x in id id",
+      "expected": "a -> a"
+    },
+    {
+      "name": "arithmetic constrains multiple params",
+      "input": "fn x => fn y => x + y * 2 - 1",
+      "expected": "Int -> Int -> Int"
     }
   ]
 }
