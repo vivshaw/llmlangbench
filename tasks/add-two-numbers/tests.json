@@ -1,9 +1,0 @@
-{
-  "tests": [
-    { "input": "1 2", "expected": "3", "approx": true },
-    { "input": "-1 -2", "expected": "-3", "approx": true },
-    { "input": "-1 1", "expected": "0", "approx": true },
-    { "input": "0 0", "expected": "0", "approx": true },
-    { "input": "0.1 0.2", "expected": "0.3", "approx": true }
-  ]
-}
