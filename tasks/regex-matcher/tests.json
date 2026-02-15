@@ -1,0 +1,179 @@
+{
+  "tests": [
+    {
+      "name": "exact literal match",
+      "input": "abc\nabc",
+      "expected": "true"
+    },
+    {
+      "name": "literal mismatch",
+      "input": "abc\ndef",
+      "expected": "false"
+    },
+    {
+      "name": "literal must be full match",
+      "input": "a\nab",
+      "expected": "false"
+    },
+    {
+      "name": "dot matches any char",
+      "input": "a.c\naxc",
+      "expected": "true"
+    },
+    {
+      "name": "dot does not match empty",
+      "input": "a.c\nac",
+      "expected": "false"
+    },
+    {
+      "name": "star zero occurrences",
+      "input": "ab*c\nac",
+      "expected": "true"
+    },
+    {
+      "name": "star multiple occurrences",
+      "input": "ab*c\nabbbc",
+      "expected": "true"
+    },
+    {
+      "name": "star matches empty string",
+      "input": "a*\n",
+      "expected": "true"
+    },
+    {
+      "name": "plus requires at least one",
+      "input": "ab+c\nac",
+      "expected": "false"
+    },
+    {
+      "name": "plus matches one or more",
+      "input": "ab+c\nabbc",
+      "expected": "true"
+    },
+    {
+      "name": "question mark zero occurrences",
+      "input": "ab?c\nac",
+      "expected": "true"
+    },
+    {
+      "name": "question mark one occurrence",
+      "input": "ab?c\nabc",
+      "expected": "true"
+    },
+    {
+      "name": "question mark rejects two",
+      "input": "ab?c\nabbc",
+      "expected": "false"
+    },
+    {
+      "name": "alternation first branch",
+      "input": "cat|dog\ncat",
+      "expected": "true"
+    },
+    {
+      "name": "alternation second branch",
+      "input": "cat|dog\ndog",
+      "expected": "true"
+    },
+    {
+      "name": "alternation no match",
+      "input": "cat|dog\nrat",
+      "expected": "false"
+    },
+    {
+      "name": "simple group with quantifier",
+      "input": "(ab)+\nabab",
+      "expected": "true"
+    },
+    {
+      "name": "group star matches empty",
+      "input": "(ab)*\n",
+      "expected": "true"
+    },
+    {
+      "name": "group star matches multiple",
+      "input": "(ab)*\nababab",
+      "expected": "true"
+    },
+    {
+      "name": "character class",
+      "input": "[aeiou]\ne",
+      "expected": "true"
+    },
+    {
+      "name": "character class mismatch",
+      "input": "[aeiou]\nx",
+      "expected": "false"
+    },
+    {
+      "name": "character range",
+      "input": "[a-z]+\nhello",
+      "expected": "true"
+    },
+    {
+      "name": "character range mismatch",
+      "input": "[a-z]+\nhello123",
+      "expected": "false"
+    },
+    {
+      "name": "negated character class",
+      "input": "[^0-9]+\nabc",
+      "expected": "true"
+    },
+    {
+      "name": "negated character class mismatch",
+      "input": "[^0-9]+\nabc123",
+      "expected": "false"
+    },
+    {
+      "name": "escaped dot matches literal dot",
+      "input": "a\\.b\na.b",
+      "expected": "true"
+    },
+    {
+      "name": "escaped dot rejects non-dot",
+      "input": "a\\.b\naxb",
+      "expected": "false"
+    },
+    {
+      "name": "nested groups with alternation",
+      "input": "((a|b)c)+\nacbc",
+      "expected": "true"
+    },
+    {
+      "name": "nested groups no match",
+      "input": "((a|b)c)+\nabc",
+      "expected": "false"
+    },
+    {
+      "name": "complex pattern",
+      "input": "[A-Z][a-z]+ [A-Z][a-z]+\nHello World",
+      "expected": "true"
+    },
+    {
+      "name": "dot star is greedy but backtracks",
+      "input": "a.*b\naxxb",
+      "expected": "true"
+    },
+    {
+      "name": "multiple alternations",
+      "input": "a|b|c\nb",
+      "expected": "true"
+    },
+    {
+      "name": "quantifier on character class",
+      "input": "[abc]*\nabccba",
+      "expected": "true"
+    },
+    {
+      "name": "empty pattern matches empty string",
+      "input": "\n",
+      "expected": "true"
+    },
+    {
+      "name": "alternation with groups and quantifiers",
+      "input": "(foo|bar)+baz\nfoofoobarbaz",
+      "expected": "true"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+[package]
+name = "regex-matcher"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "regex-matcher"
+path = "src/main.rs"
+
+[lib]
+name = "regex_matcher"
+path = "src/lib.rs"

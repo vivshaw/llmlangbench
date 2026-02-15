@@ -144,12 +144,12 @@ the agent sees the spec and scaffold, then follows a TDD workflow: write tests, 
 |---|---|---|---|
 | `add-two-numbers` | trivial | arithmetic | add two numbers — baseline sanity check |
 | `sudoku-solver` | hard | search/constraint | solve 9x9 sudoku puzzles using backtracking + constraint propagation, including hard puzzles with minimal givens |
+| `regex-matcher` | hard | automata theory | build a regex engine from scratch (no built-in regex allowed) supporting literals, `.`, `*`, `+`, `?`, `\|`, groups, character classes, and escapes |
 
 ### planned tasks
 
 | task | difficulty | domain | description |
 |---|---|---|---|
-| `regex-matcher` | hard | automata theory | build an NFA from regex syntax (`\|`, `*`, `+`, `?`, groups, character classes), then simulate it to match strings |
 | `git-object-parser` | hard | binary parsing | parse raw git objects (blob, tree, commit), reconstruct a commit log from a packfile-lite format |
 | `http-request-parser` | hard | protocol parsing | parse raw HTTP/1.1 requests — chunked transfer encoding, multipart bodies, header folding — and output structured JSON |
 | `mini-typechecker` | hard | PL theory | infer and check types for a simple expression language with `let`, `if`, lambdas, and generics (Hindley-Milner lite) |

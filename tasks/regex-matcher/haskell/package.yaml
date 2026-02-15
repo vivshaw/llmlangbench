@@ -1,0 +1,23 @@
+name: regex-matcher
+version: 0.1.0
+
+dependencies:
+  - base >= 4.7 && < 5
+
+library:
+  source-dirs: src
+
+executables:
+  regex-matcher-exe:
+    main: Main.hs
+    source-dirs: app
+    dependencies:
+      - regex-matcher
+
+tests:
+  regex-matcher-test:
+    main: Spec.hs
+    source-dirs: test
+    dependencies:
+      - regex-matcher
+      - hspec
