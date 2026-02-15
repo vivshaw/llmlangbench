@@ -264,6 +264,31 @@
       "name": "let rec - argument-swapping fixed point",
       "input": "let rec f = fn x => fn y => f y x in f",
       "expected": "a -> a -> b"
+    },
+    {
+      "name": "let rec - fixed-point combinator",
+      "input": "let rec fix = fn f => f (fix f) in fix",
+      "expected": "(a -> a) -> a"
+    },
+    {
+      "name": "higher-order composition chain",
+      "input": "let compose = fn f => fn g => fn x => f (g x) in let twice = fn f => compose f f in let quad = fn f => twice (twice f) in quad (fn x => x + 1) 0",
+      "expected": "Int"
+    },
+    {
+      "name": "multi-level let rec",
+      "input": "let rec f = fn n => if n == 0 then 0 else 1 + f (n - 1) in let rec g = fn n => if n == 0 then 0 else f n + g (n - 1) in g",
+      "expected": "Int -> Int"
+    },
+    {
+      "name": "let rec with higher-order function",
+      "input": "let rec map = fn f => fn n => if n == 0 then 0 else f n + map f (n - 1) in map (fn x => x * x) 5",
+      "expected": "Int"
+    },
+    {
+      "name": "deep let nesting stress test",
+      "input": "let a = 1 in let b = a + 1 in let c = b + 1 in let d = c + 1 in let e = d + 1 in let f = e + 1 in let g = f + 1 in let h = g + 1 in let i = h + 1 in let j = i + 1 in j",
+      "expected": "Int"
     }
   ]
 }

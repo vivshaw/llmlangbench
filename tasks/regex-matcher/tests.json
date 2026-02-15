@@ -379,6 +379,21 @@
       "name": "complex pattern with all features",
       "input": "\\w{2,}@\\w+\\.(com|org|net)\nab@test.org",
       "expected": "true"
+    },
+    {
+      "name": "performance - ReDoS optional quantifier",
+      "input": "(a?){25}a{25}\naaaaaaaaaaaaaaaaaaaaaaaaa",
+      "expected": "true"
+    },
+    {
+      "name": "performance - nested quantifier no match",
+      "input": "(a+)+b\naaaaaaaaaaaaaaaaaaaaaaaaa",
+      "expected": "false"
+    },
+    {
+      "name": "performance - alternation explosion no match",
+      "input": "(a|a)*b\naaaaaaaaaaaaaaaaaaaaaaaaa",
+      "expected": "false"
     }
   ]
 }
