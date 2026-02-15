@@ -2,7 +2,7 @@
 
 Evaluate the submitted code on the following dimensions:
 
-- **Correctness** (0-25): Does it correctly handle all supported regex features? Literals, `.`, `*`, `+`, `?`, `|`, grouping, character classes (including ranges and negation), and escape sequences? Does it enforce full-match semantics?
+- **Correctness** (0-25): Does it correctly handle all supported regex features? Literals, `.`, `*`, `+`, `?`, `|`, grouping, character classes (including ranges and negation), escape sequences, counted repetition (`{n}`, `{n,}`, `{n,m}`), and shorthand classes (`\d`, `\w`, `\s` and negations)? Does it enforce full-match semantics?
 - **Architecture** (0-25): Is the engine well-structured? Expect a clear separation between parsing (pattern → AST/IR) and matching (AST × string → bool). An NFA-based approach, recursive descent parser, or clean backtracking matcher are all acceptable. Deduct for ad-hoc string manipulation that doesn't generalize.
 - **Idiom usage** (0-25): Does it use language-appropriate patterns? For example: algebraic data types for the AST in Haskell/Rust, enums in Java, clean OOP or functional decomposition where appropriate.
 - **Readability** (0-25): Is the code understandable? Are the regex AST nodes clearly named? Is the matching logic followable? Is the code appropriately decomposed without being over-abstracted?

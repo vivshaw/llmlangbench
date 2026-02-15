@@ -27,15 +27,19 @@ Your parser must handle:
 
 Chunked encoding format:
 ```
-<chunk-size-in-hex>\r\n
+<chunk-size-in-hex>[;chunk-extension]\r\n
 <chunk-data>\r\n
-<chunk-size-in-hex>\r\n
+<chunk-size-in-hex>[;chunk-extension]\r\n
 <chunk-data>\r\n
 0\r\n
 \r\n
 ```
 
 The final chunk has size `0` and signals the end of the body. Your parser must reassemble the chunks into the complete body.
+
+### Chunk Extensions
+
+Chunk sizes may optionally be followed by a semicolon and one or more chunk extensions (e.g., `5;ext=val\r\n`). Chunk extensions must be **parsed and ignored** — only the hex size before the semicolon determines the chunk data length. Multiple extensions may be chained with semicolons (e.g., `5;name=value;other\r\n`).
 
 ## Output Format
 
@@ -123,3 +127,29 @@ host: example.com
 
 Hello World
 ```
+
+### Chunked encoding with extensions
+
+Input:
+```
+POST /data HTTP/1.1\r\n
+Host: example.com\r\n
+Transfer-Encoding: chunked\r\n
+\r\n
+5;ext=val\r\n
+Hello\r\n
+6;name=value;other\r\n
+ World\r\n
+0\r\n
+\r\n
+```
+
+Output:
+```
+POST /data HTTP/1.1
+host: example.com
+
+Hello World
+```
+
+Chunk extensions after the semicolons are ignored — only the hex size matters.

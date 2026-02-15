@@ -234,6 +234,151 @@
       "name": "dot-star cannot rearrange characters",
       "input": "a.*b.*c\naXcYb",
       "expected": "false"
+    },
+    {
+      "name": "exact repetition",
+      "input": "a{3}\naaa",
+      "expected": "true"
+    },
+    {
+      "name": "exact repetition - too few",
+      "input": "a{3}\naa",
+      "expected": "false"
+    },
+    {
+      "name": "exact repetition - too many",
+      "input": "a{3}\naaaa",
+      "expected": "false"
+    },
+    {
+      "name": "range repetition",
+      "input": "a{2,4}\naaa",
+      "expected": "true"
+    },
+    {
+      "name": "range repetition - minimum",
+      "input": "a{2,4}\naa",
+      "expected": "true"
+    },
+    {
+      "name": "range repetition - maximum",
+      "input": "a{2,4}\naaaa",
+      "expected": "true"
+    },
+    {
+      "name": "range repetition - too few",
+      "input": "a{2,4}\na",
+      "expected": "false"
+    },
+    {
+      "name": "range repetition - too many",
+      "input": "a{2,4}\naaaaa",
+      "expected": "false"
+    },
+    {
+      "name": "open range repetition",
+      "input": "a{2,}\naaaaa",
+      "expected": "true"
+    },
+    {
+      "name": "open range repetition - at minimum",
+      "input": "a{2,}\naa",
+      "expected": "true"
+    },
+    {
+      "name": "open range repetition - too few",
+      "input": "a{2,}\na",
+      "expected": "false"
+    },
+    {
+      "name": "counted repetition on group",
+      "input": "(ab){3}\nababab",
+      "expected": "true"
+    },
+    {
+      "name": "counted repetition on group - wrong count",
+      "input": "(ab){3}\nabab",
+      "expected": "false"
+    },
+    {
+      "name": "counted repetition with backtracking",
+      "input": "a{2,4}a\naaa",
+      "expected": "true"
+    },
+    {
+      "name": "digit shorthand",
+      "input": "\\d+\n12345",
+      "expected": "true"
+    },
+    {
+      "name": "digit shorthand rejects letters",
+      "input": "\\d+\n123abc",
+      "expected": "false"
+    },
+    {
+      "name": "word shorthand",
+      "input": "\\w+\nhello_World_42",
+      "expected": "true"
+    },
+    {
+      "name": "word shorthand rejects special chars",
+      "input": "\\w+\nhello world",
+      "expected": "false"
+    },
+    {
+      "name": "whitespace shorthand",
+      "input": "\\s+\n \t\n",
+      "expected": "true"
+    },
+    {
+      "name": "whitespace shorthand rejects non-whitespace",
+      "input": "\\s+\n abc",
+      "expected": "false"
+    },
+    {
+      "name": "non-digit shorthand",
+      "input": "\\D+\nabc",
+      "expected": "true"
+    },
+    {
+      "name": "non-digit shorthand rejects digits",
+      "input": "\\D+\nabc123",
+      "expected": "false"
+    },
+    {
+      "name": "non-word shorthand",
+      "input": "\\W+\n!@# ",
+      "expected": "true"
+    },
+    {
+      "name": "non-whitespace shorthand",
+      "input": "\\S+\nhello",
+      "expected": "true"
+    },
+    {
+      "name": "mixed shorthands in pattern",
+      "input": "\\w+@\\w+\\.\\w+\nuser@host.com",
+      "expected": "true"
+    },
+    {
+      "name": "shorthand with counted repetition",
+      "input": "\\d{3}-\\d{4}\n555-1234",
+      "expected": "true"
+    },
+    {
+      "name": "shorthand with counted repetition - wrong format",
+      "input": "\\d{3}-\\d{4}\n55-1234",
+      "expected": "false"
+    },
+    {
+      "name": "counted repetition on character class",
+      "input": "[a-z]{5}\nhello",
+      "expected": "true"
+    },
+    {
+      "name": "complex pattern with all features",
+      "input": "\\w{2,}@\\w+\\.(com|org|net)\nab@test.org",
+      "expected": "true"
     }
   ]
 }

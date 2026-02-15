@@ -229,6 +229,41 @@
       "name": "arithmetic constrains multiple params",
       "input": "fn x => fn y => x + y * 2 - 1",
       "expected": "Int -> Int -> Int"
+    },
+    {
+      "name": "let rec - factorial",
+      "input": "let rec fact = fn n => if n == 0 then 1 else n * fact (n - 1) in fact 5",
+      "expected": "Int"
+    },
+    {
+      "name": "let rec - unconstrained recursive function",
+      "input": "let rec f = fn x => f x in f",
+      "expected": "a -> b"
+    },
+    {
+      "name": "let rec - occurs check failure",
+      "input": "let rec f = fn x => f in f",
+      "expected": "type error"
+    },
+    {
+      "name": "let rec - recursive countdown",
+      "input": "let rec count = fn n => if n == 0 then 0 else 1 + count (n - 1) in count",
+      "expected": "Int -> Int"
+    },
+    {
+      "name": "let rec - trivially non-recursive",
+      "input": "let rec f = fn x => x in f 42",
+      "expected": "Int"
+    },
+    {
+      "name": "let rec - non-function binding",
+      "input": "let rec f = 42 in f",
+      "expected": "Int"
+    },
+    {
+      "name": "let rec - argument-swapping fixed point",
+      "input": "let rec f = fn x => fn y => f y x in f",
+      "expected": "a -> a -> b"
     }
   ]
 }

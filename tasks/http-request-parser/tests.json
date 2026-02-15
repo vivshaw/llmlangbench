@@ -139,6 +139,26 @@
       "name": "Transfer-Encoding header excluded from output",
       "input": "POST /data HTTP/1.1\r\nHost: example.com\r\nAccept: */*\r\nTransfer-Encoding: chunked\r\n\r\n3\r\nfoo\r\n3\r\nbar\r\n0\r\n\r\n",
       "expected": "POST /data HTTP/1.1\naccept: */*\nhost: example.com\n\nfoobar"
+    },
+    {
+      "name": "chunked with single chunk extension",
+      "input": "POST /data HTTP/1.1\r\nHost: example.com\r\nTransfer-Encoding: chunked\r\n\r\n5;ext=val\r\nHello\r\n0\r\n\r\n",
+      "expected": "POST /data HTTP/1.1\nhost: example.com\n\nHello"
+    },
+    {
+      "name": "chunked with multiple chunk extensions",
+      "input": "POST /data HTTP/1.1\r\nHost: example.com\r\nTransfer-Encoding: chunked\r\n\r\n5;name=value;other\r\nHello\r\n6;lang=en\r\n World\r\n0\r\n\r\n",
+      "expected": "POST /data HTTP/1.1\nhost: example.com\n\nHello World"
+    },
+    {
+      "name": "chunked with extension on zero chunk",
+      "input": "POST /data HTTP/1.1\r\nHost: example.com\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nHello\r\n0;final\r\n\r\n",
+      "expected": "POST /data HTTP/1.1\nhost: example.com\n\nHello"
+    },
+    {
+      "name": "chunked extension with hex size",
+      "input": "POST /data HTTP/1.1\r\nHost: example.com\r\nTransfer-Encoding: chunked\r\n\r\na;charset=utf8\r\n0123456789\r\n0\r\n\r\n",
+      "expected": "POST /data HTTP/1.1\nhost: example.com\n\n0123456789"
     }
   ]
 }

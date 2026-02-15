@@ -17,6 +17,7 @@ The type system is based on Hindley-Milner, supporting type inference for lambda
 | comparison | `e1 == e2` | both operands must be `Int`, result is `Bool` |
 | if-then-else | `if e1 then e2 else e3` | `e1` must be `Bool`, `e2` and `e3` must have the same type |
 | let binding | `let x = e1 in e2` | binds `x` to `e1` in `e2`; the type of `x` is generalized (let-polymorphism) |
+| recursive let | `let rec f = e1 in e2` | like `let`, but `f` is in scope within `e1` (for recursive definitions) |
 | lambda | `fn x => e` | creates a function; the parameter type is inferred |
 | application | `f x` | applies function `f` to argument `x`; juxtaposition, left-associative |
 | parentheses | `(e)` | grouping |
@@ -45,6 +46,7 @@ Types are:
 - `==`: both operands must be `Int`, result is `Bool`
 - `if c then t else e`: `c` must be `Bool`; `t` and `e` must have the same type; result has that type
 - `let x = e1 in e2`: infer the type of `e1`, **generalize** it (quantify free type variables not in the environment), then bind `x` to that polymorphic type while inferring `e2`
+- `let rec f = e1 in e2`: like `let`, but `f` is bound to a **fresh type variable** in the environment while inferring `e1`. After inferring `e1`, unify the fresh variable with the result, then generalize and bind `f` for `e2`. This allows recursive definitions like `let rec fact = fn n => if n == 0 then 1 else n * fact (n - 1) in fact 5`
 - `fn x => body`: creates a function type `T1 -> T2` where `T1` is a fresh type variable for `x` and `T2` is the type of `body`
 - `f x` (application): `f` must have type `T1 -> T2` where `T1` matches the type of `x`; result is `T2`
 - Unbound variables are a type error
@@ -80,4 +82,6 @@ infer("(fn x => x + 1) 5")                          => "Int"
 infer("fn x => x")                                  => "a -> a"
 infer("let id = fn x => x in id 42")               => "Int"
 infer("let id = fn x => x in if id true then id 42 else 0") => "Int"
+infer("let rec fact = fn n => if n == 0 then 1 else n * fact (n - 1) in fact 5") => "Int"
+infer("let rec f = fn x => f x in f")                      => "a -> b"
 ```
