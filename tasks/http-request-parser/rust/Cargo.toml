@@ -1,0 +1,12 @@
+[package]
+name = "http-request-parser"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "http-request-parser"
+path = "src/main.rs"
+
+[lib]
+name = "http_request_parser"
+path = "src/lib.rs"

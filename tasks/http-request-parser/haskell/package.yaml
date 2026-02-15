@@ -1,0 +1,23 @@
+name: http-request-parser
+version: 0.1.0
+
+dependencies:
+  - base >= 4.7 && < 5
+
+library:
+  source-dirs: src
+
+executables:
+  http-request-parser-exe:
+    main: Main.hs
+    source-dirs: app
+    dependencies:
+      - http-request-parser
+
+tests:
+  http-request-parser-test:
+    main: Spec.hs
+    source-dirs: test
+    dependencies:
+      - http-request-parser
+      - hspec

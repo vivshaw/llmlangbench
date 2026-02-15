@@ -142,17 +142,16 @@ the agent sees the spec and scaffold, then follows a TDD workflow: write tests, 
 
 | task | difficulty | domain | description |
 |---|---|---|---|
-| `add-two-numbers` | trivial | arithmetic | add two numbers — baseline sanity check |
 | `sudoku-solver` | hard | search/constraint | solve 9x9 sudoku puzzles using backtracking + constraint propagation, including hard puzzles with minimal givens |
 | `regex-matcher` | hard | automata theory | build a regex engine from scratch (no built-in regex allowed) supporting literals, `.`, `*`, `+`, `?`, `\|`, groups, character classes, and escapes |
 | `mini-typechecker` | hard | PL theory | infer and check types for an expression language with let-polymorphism, lambdas, and unification (Hindley-Milner lite) |
+| `http-request-parser` | hard | protocol parsing | parse raw HTTP/1.1 requests from scratch — headers, Content-Length bodies, chunked transfer encoding — and output structured text |
 
 ### planned tasks
 
 | task | difficulty | domain | description |
 |---|---|---|---|
 | `git-object-parser` | hard | binary parsing | parse raw git objects (blob, tree, commit), reconstruct a commit log from a packfile-lite format |
-| `http-request-parser` | hard | protocol parsing | parse raw HTTP/1.1 requests — chunked transfer encoding, multipart bodies, header folding — and output structured JSON |
 
 ### adding a new task
 

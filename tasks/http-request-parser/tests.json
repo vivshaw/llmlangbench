@@ -1,0 +1,104 @@
+{
+  "tests": [
+    {
+      "name": "simple GET",
+      "input": "GET /hello HTTP/1.1\r\nHost: example.com\r\n\r\n",
+      "expected": "GET /hello HTTP/1.1\nhost: example.com\n"
+    },
+    {
+      "name": "GET with path and query string",
+      "input": "GET /search?q=test&page=1 HTTP/1.1\r\nHost: example.com\r\n\r\n",
+      "expected": "GET /search?q=test&page=1 HTTP/1.1\nhost: example.com\n"
+    },
+    {
+      "name": "POST with Content-Length body",
+      "input": "POST /submit HTTP/1.1\r\nHost: example.com\r\nContent-Type: application/json\r\nContent-Length: 13\r\n\r\n{\"key\":\"val\"}",
+      "expected": "POST /submit HTTP/1.1\ncontent-type: application/json\nhost: example.com\n\n{\"key\":\"val\"}"
+    },
+    {
+      "name": "headers sorted alphabetically",
+      "input": "GET / HTTP/1.1\r\nZoo: last\r\nAccept: text/html\r\nHost: example.com\r\n\r\n",
+      "expected": "GET / HTTP/1.1\naccept: text/html\nhost: example.com\nzoo: last\n"
+    },
+    {
+      "name": "header values trimmed",
+      "input": "GET / HTTP/1.1\r\nHost:   example.com  \r\nAccept:  text/html \r\n\r\n",
+      "expected": "GET / HTTP/1.1\naccept: text/html\nhost: example.com\n"
+    },
+    {
+      "name": "duplicate headers combined",
+      "input": "GET / HTTP/1.1\r\nHost: example.com\r\nAccept: text/html\r\nAccept: application/json\r\n\r\n",
+      "expected": "GET / HTTP/1.1\naccept: text/html, application/json\nhost: example.com\n"
+    },
+    {
+      "name": "case-insensitive header names",
+      "input": "GET / HTTP/1.1\r\nHOST: example.com\r\nContent-TYPE: text/plain\r\n\r\n",
+      "expected": "GET / HTTP/1.1\ncontent-type: text/plain\nhost: example.com\n"
+    },
+    {
+      "name": "PUT with body",
+      "input": "PUT /resource/1 HTTP/1.1\r\nHost: api.example.com\r\nContent-Type: text/plain\r\nContent-Length: 11\r\n\r\nhello world",
+      "expected": "PUT /resource/1 HTTP/1.1\ncontent-type: text/plain\nhost: api.example.com\n\nhello world"
+    },
+    {
+      "name": "DELETE with no body",
+      "input": "DELETE /resource/42 HTTP/1.1\r\nHost: api.example.com\r\nAuthorization: Bearer token123\r\n\r\n",
+      "expected": "DELETE /resource/42 HTTP/1.1\nauthorization: Bearer token123\nhost: api.example.com\n"
+    },
+    {
+      "name": "chunked transfer encoding - simple",
+      "input": "POST /data HTTP/1.1\r\nHost: example.com\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nHello\r\n0\r\n\r\n",
+      "expected": "POST /data HTTP/1.1\nhost: example.com\n\nHello"
+    },
+    {
+      "name": "chunked transfer encoding - multiple chunks",
+      "input": "POST /data HTTP/1.1\r\nHost: example.com\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nHello\r\n1\r\n \r\n5\r\nWorld\r\n0\r\n\r\n",
+      "expected": "POST /data HTTP/1.1\nhost: example.com\n\nHello World"
+    },
+    {
+      "name": "chunked encoding with hex size",
+      "input": "POST /data HTTP/1.1\r\nHost: example.com\r\nTransfer-Encoding: chunked\r\n\r\na\r\n0123456789\r\n0\r\n\r\n",
+      "expected": "POST /data HTTP/1.1\nhost: example.com\n\n0123456789"
+    },
+    {
+      "name": "Content-Length and Transfer-Encoding excluded from output",
+      "input": "POST /submit HTTP/1.1\r\nHost: example.com\r\nContent-Length: 4\r\nContent-Type: text/plain\r\n\r\ntest",
+      "expected": "POST /submit HTTP/1.1\ncontent-type: text/plain\nhost: example.com\n\ntest"
+    },
+    {
+      "name": "empty body with no content headers",
+      "input": "HEAD /status HTTP/1.1\r\nHost: example.com\r\n\r\n",
+      "expected": "HEAD /status HTTP/1.1\nhost: example.com\n"
+    },
+    {
+      "name": "POST with empty Content-Length body",
+      "input": "POST /empty HTTP/1.1\r\nHost: example.com\r\nContent-Length: 0\r\nContent-Type: text/plain\r\n\r\n",
+      "expected": "POST /empty HTTP/1.1\ncontent-type: text/plain\nhost: example.com\n"
+    },
+    {
+      "name": "many headers",
+      "input": "GET /page HTTP/1.1\r\nHost: example.com\r\nAccept: text/html\r\nAccept-Language: en-US\r\nAccept-Encoding: gzip\r\nConnection: keep-alive\r\nUser-Agent: TestBot/1.0\r\nCache-Control: no-cache\r\n\r\n",
+      "expected": "GET /page HTTP/1.1\naccept: text/html\naccept-encoding: gzip\naccept-language: en-US\ncache-control: no-cache\nconnection: keep-alive\nhost: example.com\nuser-agent: TestBot/1.0"
+    },
+    {
+      "name": "multiline body with Content-Length",
+      "input": "POST /submit HTTP/1.1\r\nHost: example.com\r\nContent-Type: text/plain\r\nContent-Length: 11\r\n\r\nline1\nline2",
+      "expected": "POST /submit HTTP/1.1\ncontent-type: text/plain\nhost: example.com\n\nline1\nline2"
+    },
+    {
+      "name": "chunked encoding with larger body",
+      "input": "POST /upload HTTP/1.1\r\nHost: example.com\r\nContent-Type: text/plain\r\nTransfer-Encoding: chunked\r\n\r\n4\r\nWiki\r\n5\r\npedia\r\ne\r\n in chunks, yo\r\n0\r\n\r\n",
+      "expected": "POST /upload HTTP/1.1\ncontent-type: text/plain\nhost: example.com\n\nWikipedia in chunks, yo"
+    },
+    {
+      "name": "connection header excluded from sorted output",
+      "input": "GET / HTTP/1.1\r\nHost: example.com\r\nConnection: keep-alive\r\n\r\n",
+      "expected": "GET / HTTP/1.1\nconnection: keep-alive\nhost: example.com\n"
+    },
+    {
+      "name": "three duplicate headers",
+      "input": "GET / HTTP/1.1\r\nHost: example.com\r\nX-Custom: one\r\nX-Custom: two\r\nX-Custom: three\r\n\r\n",
+      "expected": "GET / HTTP/1.1\nhost: example.com\nx-custom: one, two, three\n"
+    }
+  ]
+}
