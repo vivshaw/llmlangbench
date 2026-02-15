@@ -1,0 +1,24 @@
+name: process-simulator
+version: 0.1.0
+
+dependencies:
+  - base >= 4.7 && < 5
+  - containers
+
+library:
+  source-dirs: src
+
+executables:
+  process-simulator-exe:
+    main: Main.hs
+    source-dirs: app
+    dependencies:
+      - process-simulator
+
+tests:
+  process-simulator-test:
+    main: Spec.hs
+    source-dirs: test
+    dependencies:
+      - process-simulator
+      - hspec

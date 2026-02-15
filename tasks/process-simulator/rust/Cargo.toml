@@ -1,0 +1,12 @@
+[package]
+name = "process-simulator"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "process-simulator"
+path = "src/main.rs"
+
+[lib]
+name = "process_simulator"
+path = "src/lib.rs"

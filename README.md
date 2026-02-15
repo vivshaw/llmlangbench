@@ -146,12 +146,7 @@ the agent sees the spec and scaffold, then follows a TDD workflow: write tests, 
 | `regex-matcher` | hard | automata theory | build a regex engine from scratch (no built-in regex allowed) supporting literals, `.`, `*`, `+`, `?`, `\|`, groups, character classes, and escapes |
 | `mini-typechecker` | hard | PL theory | infer and check types for an expression language with let-polymorphism, lambdas, and unification (Hindley-Milner lite) |
 | `http-request-parser` | hard | protocol parsing | parse raw HTTP/1.1 requests from scratch — headers, Content-Length bodies, chunked transfer encoding — and output structured text |
-
-### planned tasks
-
-| task | difficulty | domain | description |
-|---|---|---|---|
-| `git-object-parser` | hard | binary parsing | parse raw git objects (blob, tree, commit), reconstruct a commit log from a packfile-lite format |
+| `process-simulator` | hard | concurrency | simulate concurrent processes with channels (bounded, capacity 1), locks (mutual exclusion), worker-limited scheduling, and deadlock detection |
 
 ### adding a new task
 

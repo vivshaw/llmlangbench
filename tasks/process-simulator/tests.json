@@ -1,0 +1,79 @@
+{
+  "tests": [
+    {
+      "name": "single process computes",
+      "input": "workers 1\nA: compute, compute, compute",
+      "expected": "0 A compute\n1 A compute\n2 A compute\ndone"
+    },
+    {
+      "name": "two parallel processes",
+      "input": "workers 2\nA: compute, compute\nB: compute, compute, compute",
+      "expected": "0 A compute\n0 B compute\n1 A compute\n1 B compute\n2 B compute\ndone"
+    },
+    {
+      "name": "simple send and recv",
+      "input": "workers 2\nA: compute, send ch1\nB: recv ch1, compute",
+      "expected": "0 A compute\n1 A send ch1\n1 B recv ch1\n2 B compute\ndone"
+    },
+    {
+      "name": "lock handoff in same tick",
+      "input": "workers 2\nA: lock R1, compute, unlock R1\nB: lock R1, compute, unlock R1",
+      "expected": "0 A lock R1\n1 A compute\n2 A unlock R1\n2 B lock R1\n3 B compute\n4 B unlock R1\ndone"
+    },
+    {
+      "name": "pipeline A to B to C",
+      "input": "workers 3\nA: compute, send ch1\nB: recv ch1, compute, send ch2\nC: recv ch2, compute",
+      "expected": "0 A compute\n1 A send ch1\n1 B recv ch1\n2 B compute\n3 B send ch2\n3 C recv ch2\n4 C compute\ndone"
+    },
+    {
+      "name": "simple channel deadlock",
+      "input": "workers 2\nA: recv ch1\nB: recv ch2",
+      "expected": "deadlock A B"
+    },
+    {
+      "name": "lock and channel deadlock",
+      "input": "workers 1\nA: lock R1, recv ch1, unlock R1\nB: lock R1, send ch1, unlock R1",
+      "expected": "0 A lock R1\ndeadlock A B"
+    },
+    {
+      "name": "fan-out via channels",
+      "input": "workers 3\nA: send ch1, send ch2\nB: recv ch1, compute\nC: recv ch2, compute",
+      "expected": "0 A send ch1\n0 B recv ch1\n1 A send ch2\n1 B compute\n1 C recv ch2\n2 C compute\ndone"
+    },
+    {
+      "name": "worker bottleneck serializes execution",
+      "input": "workers 1\nA: compute, compute\nB: compute, compute\nC: compute, compute",
+      "expected": "0 A compute\n1 A compute\n2 B compute\n3 B compute\n4 C compute\n5 C compute\ndone"
+    },
+    {
+      "name": "multiple receivers compete for channel",
+      "input": "workers 3\nA: send ch1, send ch1\nB: recv ch1, compute\nC: recv ch1, compute",
+      "expected": "0 A send ch1\n0 B recv ch1\n1 A send ch1\n1 B compute\n1 C recv ch1\n2 C compute\ndone"
+    },
+    {
+      "name": "resource contention with parallel compute",
+      "input": "workers 2\nA: compute, lock R1, compute, unlock R1\nB: lock R1, compute, unlock R1, compute",
+      "expected": "0 A compute\n0 B lock R1\n1 B compute\n2 B unlock R1\n3 A lock R1\n3 B compute\n4 A compute\n5 A unlock R1\ndone"
+    },
+    {
+      "name": "lock channel interaction resolves",
+      "input": "workers 2\nA: lock R1, send ch1, unlock R1\nB: recv ch1, lock R1, compute, unlock R1",
+      "expected": "0 A lock R1\n1 A send ch1\n1 B recv ch1\n2 A unlock R1\n2 B lock R1\n3 B compute\n4 B unlock R1\ndone"
+    },
+    {
+      "name": "four process deadlock",
+      "input": "workers 2\nA: lock R1, recv ch1, unlock R1\nB: lock R2, recv ch2, unlock R2\nC: lock R1, send ch2, unlock R1\nD: lock R2, send ch1, unlock R2",
+      "expected": "0 A lock R1\n0 B lock R2\ndeadlock A B C D"
+    },
+    {
+      "name": "send blocks when channel full",
+      "input": "workers 2\nA: send ch1, send ch1\nB: compute, compute, recv ch1, recv ch1",
+      "expected": "0 A send ch1\n0 B compute\n1 B compute\n2 B recv ch1\n3 A send ch1\n3 B recv ch1\ndone"
+    },
+    {
+      "name": "complex pipeline with locks and channels",
+      "input": "workers 2\nA: compute, lock R1, send ch1, compute, unlock R1\nB: compute, recv ch1, lock R1, compute, unlock R1, send ch2\nC: recv ch2, compute",
+      "expected": "0 A compute\n0 B compute\n1 A lock R1\n2 A send ch1\n2 B recv ch1\n3 A compute\n4 A unlock R1\n4 B lock R1\n5 B compute\n6 B unlock R1\n7 B send ch2\n7 C recv ch2\n8 C compute\ndone"
+    }
+  ]
+}
