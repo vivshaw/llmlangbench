@@ -1,0 +1,499 @@
+{
+  "tests": [
+    {
+      "name": "create table and select all",
+      "input": "CREATE TABLE t (id INTEGER, name TEXT);\nINSERT INTO t VALUES (1, 'Alice');\nINSERT INTO t VALUES (2, 'Bob');\nSELECT * FROM t;",
+      "expected": "id|name\n1|Alice\n2|Bob"
+    },
+    {
+      "name": "select specific columns",
+      "input": "CREATE TABLE t (id INTEGER, name TEXT, age INTEGER);\nINSERT INTO t VALUES (1, 'Alice', 30);\nINSERT INTO t VALUES (2, 'Bob', 25);\nSELECT name, age FROM t;",
+      "expected": "name|age\nAlice|30\nBob|25"
+    },
+    {
+      "name": "insert with column list",
+      "input": "CREATE TABLE t (id INTEGER, name TEXT, age INTEGER);\nINSERT INTO t (name, id) VALUES ('Alice', 1);\nSELECT * FROM t;",
+      "expected": "id|name|age\n1|Alice|NULL"
+    },
+    {
+      "name": "multiple tables",
+      "input": "CREATE TABLE a (x INTEGER);\nCREATE TABLE b (y INTEGER);\nINSERT INTO a VALUES (1);\nINSERT INTO b VALUES (2);\nSELECT * FROM a;\nSELECT * FROM b;",
+      "expected": "x\n1\n\ny\n2"
+    },
+    {
+      "name": "select with computed expression",
+      "input": "CREATE TABLE t (x INTEGER, y INTEGER);\nINSERT INTO t VALUES (3, 7);\nSELECT x + y AS total FROM t;",
+      "expected": "total\n10"
+    },
+    {
+      "name": "select with alias",
+      "input": "CREATE TABLE t (first_name TEXT);\nINSERT INTO t VALUES ('Alice');\nSELECT first_name AS name FROM t;",
+      "expected": "name\nAlice"
+    },
+    {
+      "name": "where equality",
+      "input": "CREATE TABLE t (id INTEGER, name TEXT);\nINSERT INTO t VALUES (1, 'Alice');\nINSERT INTO t VALUES (2, 'Bob');\nINSERT INTO t VALUES (3, 'Carol');\nSELECT name FROM t WHERE id = 2;",
+      "expected": "name\nBob"
+    },
+    {
+      "name": "where comparison",
+      "input": "CREATE TABLE t (id INTEGER, val INTEGER);\nINSERT INTO t VALUES (1, 10);\nINSERT INTO t VALUES (2, 20);\nINSERT INTO t VALUES (3, 30);\nSELECT id FROM t WHERE val > 15;",
+      "expected": "id\n2\n3"
+    },
+    {
+      "name": "where AND",
+      "input": "CREATE TABLE t (x INTEGER, y INTEGER);\nINSERT INTO t VALUES (1, 10);\nINSERT INTO t VALUES (2, 20);\nINSERT INTO t VALUES (3, 30);\nSELECT x FROM t WHERE x >= 2 AND y <= 20;",
+      "expected": "x\n2"
+    },
+    {
+      "name": "where OR",
+      "input": "CREATE TABLE t (x INTEGER);\nINSERT INTO t VALUES (1);\nINSERT INTO t VALUES (2);\nINSERT INTO t VALUES (3);\nSELECT x FROM t WHERE x = 1 OR x = 3;",
+      "expected": "x\n1\n3"
+    },
+    {
+      "name": "where NOT",
+      "input": "CREATE TABLE t (x INTEGER);\nINSERT INTO t VALUES (1);\nINSERT INTO t VALUES (2);\nINSERT INTO t VALUES (3);\nSELECT x FROM t WHERE NOT x = 2;",
+      "expected": "x\n1\n3"
+    },
+    {
+      "name": "where complex boolean",
+      "input": "CREATE TABLE t (a INTEGER, b INTEGER, c INTEGER);\nINSERT INTO t VALUES (1, 2, 3);\nINSERT INTO t VALUES (4, 5, 6);\nINSERT INTO t VALUES (7, 8, 9);\nSELECT a FROM t WHERE (a > 3 AND b < 8) OR c = 3;",
+      "expected": "a\n1\n4"
+    },
+    {
+      "name": "update and verify",
+      "input": "CREATE TABLE t (id INTEGER, val INTEGER);\nINSERT INTO t VALUES (1, 10);\nINSERT INTO t VALUES (2, 20);\nUPDATE t SET val = 99;\nSELECT * FROM t;",
+      "expected": "id|val\n1|99\n2|99"
+    },
+    {
+      "name": "update with where",
+      "input": "CREATE TABLE t (id INTEGER, val INTEGER);\nINSERT INTO t VALUES (1, 10);\nINSERT INTO t VALUES (2, 20);\nINSERT INTO t VALUES (3, 30);\nUPDATE t SET val = val * 2 WHERE id > 1;\nSELECT * FROM t;",
+      "expected": "id|val\n1|10\n2|40\n3|60"
+    },
+    {
+      "name": "delete with where",
+      "input": "CREATE TABLE t (id INTEGER, name TEXT);\nINSERT INTO t VALUES (1, 'Alice');\nINSERT INTO t VALUES (2, 'Bob');\nINSERT INTO t VALUES (3, 'Carol');\nDELETE FROM t WHERE id = 2;\nSELECT * FROM t;",
+      "expected": "id|name\n1|Alice\n3|Carol"
+    },
+    {
+      "name": "delete all rows",
+      "input": "CREATE TABLE t (id INTEGER);\nINSERT INTO t VALUES (1);\nINSERT INTO t VALUES (2);\nDELETE FROM t;\nSELECT * FROM t;",
+      "expected": "id"
+    },
+    {
+      "name": "boolean values",
+      "input": "CREATE TABLE t (id INTEGER, active BOOLEAN);\nINSERT INTO t VALUES (1, TRUE);\nINSERT INTO t VALUES (2, FALSE);\nSELECT * FROM t WHERE active = TRUE;",
+      "expected": "id|active\n1|true"
+    },
+    {
+      "name": "float values",
+      "input": "CREATE TABLE t (id INTEGER, val FLOAT);\nINSERT INTO t VALUES (1, 3.14);\nINSERT INTO t VALUES (2, 2.00);\nSELECT * FROM t;",
+      "expected": "id|val\n1|3.14\n2|2.00"
+    },
+    {
+      "name": "string with escaped quote",
+      "input": "CREATE TABLE t (name TEXT);\nINSERT INTO t VALUES ('O''Brien');\nSELECT * FROM t;",
+      "expected": "name\nO'Brien"
+    },
+    {
+      "name": "negative numbers",
+      "input": "CREATE TABLE t (x INTEGER);\nINSERT INTO t VALUES (-5);\nINSERT INTO t VALUES (3);\nSELECT x, -x AS neg FROM t;",
+      "expected": "x|neg\n-5|5\n3|-3"
+    },
+    {
+      "name": "arithmetic in select",
+      "input": "CREATE TABLE t (a INTEGER, b INTEGER);\nINSERT INTO t VALUES (10, 3);\nSELECT a + b AS sum, a - b AS diff, a * b AS prod, a / b AS quot FROM t;",
+      "expected": "sum|diff|prod|quot\n13|7|30|3"
+    },
+    {
+      "name": "integer division truncates toward zero",
+      "input": "CREATE TABLE t (a INTEGER, b INTEGER);\nINSERT INTO t VALUES (7, 2);\nINSERT INTO t VALUES (-7, 2);\nSELECT a / b AS result FROM t;",
+      "expected": "result\n3\n-3"
+    },
+    {
+      "name": "float arithmetic promotion",
+      "input": "CREATE TABLE t (x INTEGER, y FLOAT);\nINSERT INTO t VALUES (3, 1.50);\nSELECT x + y AS result FROM t;",
+      "expected": "result\n4.50"
+    },
+    {
+      "name": "insert and select NULL",
+      "input": "CREATE TABLE t (id INTEGER, val INTEGER);\nINSERT INTO t VALUES (1, NULL);\nINSERT INTO t VALUES (2, 5);\nSELECT * FROM t;",
+      "expected": "id|val\n1|NULL\n2|5"
+    },
+    {
+      "name": "IS NULL",
+      "input": "CREATE TABLE t (id INTEGER, val INTEGER);\nINSERT INTO t VALUES (1, NULL);\nINSERT INTO t VALUES (2, 5);\nINSERT INTO t VALUES (3, NULL);\nSELECT id FROM t WHERE val IS NULL;",
+      "expected": "id\n1\n3"
+    },
+    {
+      "name": "IS NOT NULL",
+      "input": "CREATE TABLE t (id INTEGER, val INTEGER);\nINSERT INTO t VALUES (1, NULL);\nINSERT INTO t VALUES (2, 5);\nINSERT INTO t VALUES (3, NULL);\nSELECT id FROM t WHERE val IS NOT NULL;",
+      "expected": "id\n2"
+    },
+    {
+      "name": "NULL in arithmetic",
+      "input": "CREATE TABLE t (x INTEGER);\nINSERT INTO t VALUES (NULL);\nSELECT x + 1 AS result FROM t;",
+      "expected": "result\nNULL"
+    },
+    {
+      "name": "NULL in comparison excluded from WHERE",
+      "input": "CREATE TABLE t (x INTEGER);\nINSERT INTO t VALUES (1);\nINSERT INTO t VALUES (NULL);\nINSERT INTO t VALUES (3);\nSELECT x FROM t WHERE x > 0;",
+      "expected": "x\n1\n3"
+    },
+    {
+      "name": "NULL = NULL is not true",
+      "input": "CREATE TABLE t (x INTEGER);\nINSERT INTO t VALUES (NULL);\nINSERT INTO t VALUES (1);\nSELECT x FROM t WHERE x = NULL;",
+      "expected": "x"
+    },
+    {
+      "name": "NULL three-valued logic AND",
+      "input": "CREATE TABLE t (a BOOLEAN, b BOOLEAN);\nINSERT INTO t VALUES (TRUE, NULL);\nINSERT INTO t VALUES (FALSE, NULL);\nINSERT INTO t VALUES (NULL, TRUE);\nSELECT a, b, a AND b AS result FROM t;",
+      "expected": "a|b|result\ntrue|NULL|NULL\nfalse|NULL|false\nNULL|true|NULL"
+    },
+    {
+      "name": "NULL three-valued logic OR",
+      "input": "CREATE TABLE t (a BOOLEAN, b BOOLEAN);\nINSERT INTO t VALUES (TRUE, NULL);\nINSERT INTO t VALUES (FALSE, NULL);\nINSERT INTO t VALUES (NULL, FALSE);\nSELECT a, b, a OR b AS result FROM t;",
+      "expected": "a|b|result\ntrue|NULL|true\nfalse|NULL|NULL\nNULL|false|NULL"
+    },
+    {
+      "name": "COUNT(*) vs COUNT(col) with NULLs",
+      "input": "CREATE TABLE t (id INTEGER, val INTEGER);\nINSERT INTO t VALUES (1, 10);\nINSERT INTO t VALUES (2, NULL);\nINSERT INTO t VALUES (3, 30);\nSELECT COUNT(*) AS total, COUNT(val) AS non_null FROM t;",
+      "expected": "total|non_null\n3|2"
+    },
+    {
+      "name": "inner join basic",
+      "input": "CREATE TABLE emp (id INTEGER, name TEXT, dept_id INTEGER);\nCREATE TABLE dept (id INTEGER, dept_name TEXT);\nINSERT INTO dept VALUES (1, 'Engineering');\nINSERT INTO dept VALUES (2, 'Sales');\nINSERT INTO emp VALUES (1, 'Alice', 1);\nINSERT INTO emp VALUES (2, 'Bob', 2);\nINSERT INTO emp VALUES (3, 'Carol', 1);\nSELECT emp.name, dept.dept_name FROM emp JOIN dept ON emp.dept_id = dept.id;",
+      "expected": "name|dept_name\nAlice|Engineering\nBob|Sales\nCarol|Engineering"
+    },
+    {
+      "name": "inner join with table aliases",
+      "input": "CREATE TABLE emp (id INTEGER, name TEXT, dept_id INTEGER);\nCREATE TABLE dept (id INTEGER, dept_name TEXT);\nINSERT INTO dept VALUES (1, 'Engineering');\nINSERT INTO emp VALUES (1, 'Alice', 1);\nINSERT INTO emp VALUES (2, 'Bob', 1);\nSELECT e.name, d.dept_name FROM emp AS e JOIN dept AS d ON e.dept_id = d.id;",
+      "expected": "name|dept_name\nAlice|Engineering\nBob|Engineering"
+    },
+    {
+      "name": "inner join with where",
+      "input": "CREATE TABLE orders (id INTEGER, customer_id INTEGER, amount INTEGER);\nCREATE TABLE customers (id INTEGER, name TEXT);\nINSERT INTO customers VALUES (1, 'Alice');\nINSERT INTO customers VALUES (2, 'Bob');\nINSERT INTO orders VALUES (1, 1, 100);\nINSERT INTO orders VALUES (2, 2, 200);\nINSERT INTO orders VALUES (3, 1, 150);\nSELECT c.name, o.amount FROM orders AS o JOIN customers AS c ON o.customer_id = c.id WHERE o.amount > 120;",
+      "expected": "name|amount\nBob|200\nAlice|150"
+    },
+    {
+      "name": "left join with nulls",
+      "input": "CREATE TABLE emp (id INTEGER, name TEXT, dept_id INTEGER);\nCREATE TABLE dept (id INTEGER, dept_name TEXT);\nINSERT INTO dept VALUES (1, 'Engineering');\nINSERT INTO emp VALUES (1, 'Alice', 1);\nINSERT INTO emp VALUES (2, 'Bob', NULL);\nSELECT e.name, d.dept_name FROM emp AS e LEFT JOIN dept AS d ON e.dept_id = d.id;",
+      "expected": "name|dept_name\nAlice|Engineering\nBob|NULL"
+    },
+    {
+      "name": "left join all match",
+      "input": "CREATE TABLE a (id INTEGER, val TEXT);\nCREATE TABLE b (id INTEGER, info TEXT);\nINSERT INTO a VALUES (1, 'x');\nINSERT INTO a VALUES (2, 'y');\nINSERT INTO b VALUES (1, 'p');\nINSERT INTO b VALUES (2, 'q');\nSELECT a.val, b.info FROM a LEFT JOIN b ON a.id = b.id;",
+      "expected": "val|info\nx|p\ny|q"
+    },
+    {
+      "name": "multi-table join",
+      "input": "CREATE TABLE a (id INTEGER, name TEXT);\nCREATE TABLE b (a_id INTEGER, c_id INTEGER);\nCREATE TABLE c (id INTEGER, label TEXT);\nINSERT INTO a VALUES (1, 'Alice');\nINSERT INTO c VALUES (10, 'X');\nINSERT INTO c VALUES (20, 'Y');\nINSERT INTO b VALUES (1, 10);\nINSERT INTO b VALUES (1, 20);\nSELECT a.name, c.label FROM a JOIN b ON a.id = b.a_id JOIN c ON b.c_id = c.id;",
+      "expected": "name|label\nAlice|X\nAlice|Y"
+    },
+    {
+      "name": "self join",
+      "input": "CREATE TABLE emp (id INTEGER, name TEXT, manager_id INTEGER);\nINSERT INTO emp VALUES (1, 'Alice', NULL);\nINSERT INTO emp VALUES (2, 'Bob', 1);\nINSERT INTO emp VALUES (3, 'Carol', 1);\nSELECT e.name, m.name AS manager FROM emp AS e JOIN emp AS m ON e.manager_id = m.id;",
+      "expected": "name|manager\nBob|Alice\nCarol|Alice"
+    },
+    {
+      "name": "inner join no matching rows",
+      "input": "CREATE TABLE a (id INTEGER);\nCREATE TABLE b (id INTEGER);\nINSERT INTO a VALUES (1);\nINSERT INTO b VALUES (2);\nSELECT * FROM a JOIN b ON a.id = b.id;",
+      "expected": "id|id"
+    },
+    {
+      "name": "COUNT(*)",
+      "input": "CREATE TABLE t (id INTEGER);\nINSERT INTO t VALUES (1);\nINSERT INTO t VALUES (2);\nINSERT INTO t VALUES (3);\nSELECT COUNT(*) AS cnt FROM t;",
+      "expected": "cnt\n3"
+    },
+    {
+      "name": "SUM and AVG",
+      "input": "CREATE TABLE t (val INTEGER);\nINSERT INTO t VALUES (10);\nINSERT INTO t VALUES (20);\nINSERT INTO t VALUES (30);\nSELECT SUM(val) AS total, AVG(val) AS average FROM t;",
+      "expected": "total|average\n60|20.00"
+    },
+    {
+      "name": "MIN and MAX",
+      "input": "CREATE TABLE t (val INTEGER);\nINSERT INTO t VALUES (5);\nINSERT INTO t VALUES (15);\nINSERT INTO t VALUES (10);\nSELECT MIN(val) AS lo, MAX(val) AS hi FROM t;",
+      "expected": "lo|hi\n5|15"
+    },
+    {
+      "name": "MIN and MAX on text",
+      "input": "CREATE TABLE t (name TEXT);\nINSERT INTO t VALUES ('Charlie');\nINSERT INTO t VALUES ('Alice');\nINSERT INTO t VALUES ('Bob');\nSELECT MIN(name) AS first, MAX(name) AS last FROM t;",
+      "expected": "first|last\nAlice|Charlie"
+    },
+    {
+      "name": "GROUP BY single column",
+      "input": "CREATE TABLE t (category TEXT, amount INTEGER);\nINSERT INTO t VALUES ('A', 10);\nINSERT INTO t VALUES ('B', 20);\nINSERT INTO t VALUES ('A', 30);\nINSERT INTO t VALUES ('B', 40);\nSELECT category, SUM(amount) AS total FROM t GROUP BY category;",
+      "expected": "category|total\nA|40\nB|60"
+    },
+    {
+      "name": "GROUP BY with COUNT",
+      "input": "CREATE TABLE t (color TEXT, size INTEGER);\nINSERT INTO t VALUES ('red', 1);\nINSERT INTO t VALUES ('blue', 2);\nINSERT INTO t VALUES ('red', 3);\nINSERT INTO t VALUES ('red', 4);\nSELECT color, COUNT(*) AS cnt FROM t GROUP BY color;",
+      "expected": "color|cnt\nred|3\nblue|1"
+    },
+    {
+      "name": "GROUP BY multiple columns",
+      "input": "CREATE TABLE t (a TEXT, b TEXT, val INTEGER);\nINSERT INTO t VALUES ('x', 'p', 1);\nINSERT INTO t VALUES ('x', 'q', 2);\nINSERT INTO t VALUES ('x', 'p', 3);\nINSERT INTO t VALUES ('y', 'p', 4);\nSELECT a, b, SUM(val) AS total FROM t GROUP BY a, b;",
+      "expected": "a|b|total\nx|p|4\nx|q|2\ny|p|4"
+    },
+    {
+      "name": "HAVING",
+      "input": "CREATE TABLE t (category TEXT, amount INTEGER);\nINSERT INTO t VALUES ('A', 10);\nINSERT INTO t VALUES ('B', 20);\nINSERT INTO t VALUES ('A', 30);\nINSERT INTO t VALUES ('B', 40);\nINSERT INTO t VALUES ('C', 5);\nSELECT category, SUM(amount) AS total FROM t GROUP BY category HAVING SUM(amount) > 30;",
+      "expected": "category|total\nA|40\nB|60"
+    },
+    {
+      "name": "aggregate on empty table",
+      "input": "CREATE TABLE t (val INTEGER);\nSELECT COUNT(*) AS cnt, SUM(val) AS total, AVG(val) AS avg FROM t;",
+      "expected": "cnt|total|avg\n0|NULL|NULL"
+    },
+    {
+      "name": "GROUP BY with NULLs",
+      "input": "CREATE TABLE t (grp INTEGER, val INTEGER);\nINSERT INTO t VALUES (1, 10);\nINSERT INTO t VALUES (NULL, 20);\nINSERT INTO t VALUES (1, 30);\nINSERT INTO t VALUES (NULL, 40);\nSELECT grp, SUM(val) AS total FROM t GROUP BY grp;",
+      "expected": "grp|total\n1|40\nNULL|60"
+    },
+    {
+      "name": "ORDER BY ASC",
+      "input": "CREATE TABLE t (name TEXT, age INTEGER);\nINSERT INTO t VALUES ('Carol', 35);\nINSERT INTO t VALUES ('Alice', 30);\nINSERT INTO t VALUES ('Bob', 25);\nSELECT * FROM t ORDER BY name;",
+      "expected": "name|age\nAlice|30\nBob|25\nCarol|35"
+    },
+    {
+      "name": "ORDER BY DESC",
+      "input": "CREATE TABLE t (val INTEGER);\nINSERT INTO t VALUES (3);\nINSERT INTO t VALUES (1);\nINSERT INTO t VALUES (2);\nSELECT val FROM t ORDER BY val DESC;",
+      "expected": "val\n3\n2\n1"
+    },
+    {
+      "name": "ORDER BY multiple columns",
+      "input": "CREATE TABLE t (a INTEGER, b INTEGER);\nINSERT INTO t VALUES (2, 1);\nINSERT INTO t VALUES (1, 2);\nINSERT INTO t VALUES (1, 1);\nINSERT INTO t VALUES (2, 2);\nSELECT * FROM t ORDER BY a ASC, b DESC;",
+      "expected": "a|b\n1|2\n1|1\n2|2\n2|1"
+    },
+    {
+      "name": "ORDER BY with NULLs first in ASC",
+      "input": "CREATE TABLE t (val INTEGER);\nINSERT INTO t VALUES (3);\nINSERT INTO t VALUES (NULL);\nINSERT INTO t VALUES (1);\nSELECT val FROM t ORDER BY val ASC;",
+      "expected": "val\nNULL\n1\n3"
+    },
+    {
+      "name": "ORDER BY with NULLs last in DESC",
+      "input": "CREATE TABLE t (val INTEGER);\nINSERT INTO t VALUES (3);\nINSERT INTO t VALUES (NULL);\nINSERT INTO t VALUES (1);\nSELECT val FROM t ORDER BY val DESC;",
+      "expected": "val\n3\n1\nNULL"
+    },
+    {
+      "name": "LIMIT",
+      "input": "CREATE TABLE t (val INTEGER);\nINSERT INTO t VALUES (1);\nINSERT INTO t VALUES (2);\nINSERT INTO t VALUES (3);\nINSERT INTO t VALUES (4);\nSELECT val FROM t LIMIT 2;",
+      "expected": "val\n1\n2"
+    },
+    {
+      "name": "LIMIT with OFFSET",
+      "input": "CREATE TABLE t (val INTEGER);\nINSERT INTO t VALUES (1);\nINSERT INTO t VALUES (2);\nINSERT INTO t VALUES (3);\nINSERT INTO t VALUES (4);\nINSERT INTO t VALUES (5);\nSELECT val FROM t LIMIT 2 OFFSET 2;",
+      "expected": "val\n3\n4"
+    },
+    {
+      "name": "ORDER BY alias",
+      "input": "CREATE TABLE t (x INTEGER);\nINSERT INTO t VALUES (3);\nINSERT INTO t VALUES (1);\nINSERT INTO t VALUES (2);\nSELECT x AS val FROM t ORDER BY val;",
+      "expected": "val\n1\n2\n3"
+    },
+    {
+      "name": "LIKE with percent",
+      "input": "CREATE TABLE t (name TEXT);\nINSERT INTO t VALUES ('Alice');\nINSERT INTO t VALUES ('Bob');\nINSERT INTO t VALUES ('Alicia');\nSELECT name FROM t WHERE name LIKE 'Al%';",
+      "expected": "name\nAlice\nAlicia"
+    },
+    {
+      "name": "LIKE with underscore",
+      "input": "CREATE TABLE t (code TEXT);\nINSERT INTO t VALUES ('A1');\nINSERT INTO t VALUES ('A12');\nINSERT INTO t VALUES ('B1');\nSELECT code FROM t WHERE code LIKE 'A_';",
+      "expected": "code\nA1"
+    },
+    {
+      "name": "LIKE is case-sensitive",
+      "input": "CREATE TABLE t (name TEXT);\nINSERT INTO t VALUES ('Alice');\nINSERT INTO t VALUES ('alice');\nSELECT name FROM t WHERE name LIKE 'A%';",
+      "expected": "name\nAlice"
+    },
+    {
+      "name": "LIKE contains pattern",
+      "input": "CREATE TABLE t (name TEXT);\nINSERT INTO t VALUES ('hello world');\nINSERT INTO t VALUES ('world hello');\nINSERT INTO t VALUES ('test');\nSELECT name FROM t WHERE name LIKE '%llo%';",
+      "expected": "name\nhello world\nworld hello"
+    },
+    {
+      "name": "IN with value list",
+      "input": "CREATE TABLE t (x INTEGER);\nINSERT INTO t VALUES (1);\nINSERT INTO t VALUES (2);\nINSERT INTO t VALUES (3);\nINSERT INTO t VALUES (4);\nSELECT x FROM t WHERE x IN (1, 3, 5);",
+      "expected": "x\n1\n3"
+    },
+    {
+      "name": "NOT IN",
+      "input": "CREATE TABLE t (x INTEGER);\nINSERT INTO t VALUES (1);\nINSERT INTO t VALUES (2);\nINSERT INTO t VALUES (3);\nSELECT x FROM t WHERE x NOT IN (2);",
+      "expected": "x\n1\n3"
+    },
+    {
+      "name": "DISTINCT",
+      "input": "CREATE TABLE t (color TEXT);\nINSERT INTO t VALUES ('red');\nINSERT INTO t VALUES ('blue');\nINSERT INTO t VALUES ('red');\nINSERT INTO t VALUES ('green');\nINSERT INTO t VALUES ('blue');\nSELECT DISTINCT color FROM t;",
+      "expected": "color\nred\nblue\ngreen"
+    },
+    {
+      "name": "DISTINCT with ORDER BY",
+      "input": "CREATE TABLE t (color TEXT);\nINSERT INTO t VALUES ('red');\nINSERT INTO t VALUES ('blue');\nINSERT INTO t VALUES ('red');\nINSERT INTO t VALUES ('green');\nSELECT DISTINCT color FROM t ORDER BY color;",
+      "expected": "color\nblue\ngreen\nred"
+    },
+    {
+      "name": "DISTINCT with NULLs",
+      "input": "CREATE TABLE t (x INTEGER);\nINSERT INTO t VALUES (1);\nINSERT INTO t VALUES (NULL);\nINSERT INTO t VALUES (1);\nINSERT INTO t VALUES (NULL);\nSELECT DISTINCT x FROM t;",
+      "expected": "x\n1\nNULL"
+    },
+    {
+      "name": "scalar subquery in WHERE",
+      "input": "CREATE TABLE t (id INTEGER, val INTEGER);\nINSERT INTO t VALUES (1, 10);\nINSERT INTO t VALUES (2, 20);\nINSERT INTO t VALUES (3, 30);\nSELECT id FROM t WHERE val > (SELECT AVG(val) FROM t);",
+      "expected": "id\n3"
+    },
+    {
+      "name": "IN subquery",
+      "input": "CREATE TABLE orders (id INTEGER, customer_id INTEGER);\nCREATE TABLE customers (id INTEGER, name TEXT);\nINSERT INTO customers VALUES (1, 'Alice');\nINSERT INTO customers VALUES (2, 'Bob');\nINSERT INTO customers VALUES (3, 'Carol');\nINSERT INTO orders VALUES (1, 1);\nINSERT INTO orders VALUES (2, 3);\nSELECT name FROM customers WHERE id IN (SELECT customer_id FROM orders);",
+      "expected": "name\nAlice\nCarol"
+    },
+    {
+      "name": "NOT IN subquery",
+      "input": "CREATE TABLE orders (id INTEGER, customer_id INTEGER);\nCREATE TABLE customers (id INTEGER, name TEXT);\nINSERT INTO customers VALUES (1, 'Alice');\nINSERT INTO customers VALUES (2, 'Bob');\nINSERT INTO customers VALUES (3, 'Carol');\nINSERT INTO orders VALUES (1, 1);\nINSERT INTO orders VALUES (2, 3);\nSELECT name FROM customers WHERE id NOT IN (SELECT customer_id FROM orders);",
+      "expected": "name\nBob"
+    },
+    {
+      "name": "EXISTS subquery",
+      "input": "CREATE TABLE products (id INTEGER, name TEXT);\nCREATE TABLE orders (id INTEGER, product_id INTEGER);\nINSERT INTO products VALUES (1, 'Widget');\nINSERT INTO products VALUES (2, 'Gadget');\nINSERT INTO products VALUES (3, 'Doohickey');\nINSERT INTO orders VALUES (1, 1);\nINSERT INTO orders VALUES (2, 1);\nINSERT INTO orders VALUES (3, 3);\nSELECT p.name FROM products AS p WHERE EXISTS (SELECT 1 FROM orders AS o WHERE o.product_id = p.id);",
+      "expected": "name\nWidget\nDoohickey"
+    },
+    {
+      "name": "NOT EXISTS subquery",
+      "input": "CREATE TABLE products (id INTEGER, name TEXT);\nCREATE TABLE orders (id INTEGER, product_id INTEGER);\nINSERT INTO products VALUES (1, 'Widget');\nINSERT INTO products VALUES (2, 'Gadget');\nINSERT INTO products VALUES (3, 'Doohickey');\nINSERT INTO orders VALUES (1, 1);\nINSERT INTO orders VALUES (2, 3);\nSELECT p.name FROM products AS p WHERE NOT EXISTS (SELECT 1 FROM orders AS o WHERE o.product_id = p.id);",
+      "expected": "name\nGadget"
+    },
+    {
+      "name": "subquery in SELECT list",
+      "input": "CREATE TABLE emp (id INTEGER, name TEXT, dept_id INTEGER);\nCREATE TABLE dept (id INTEGER, dept_name TEXT);\nINSERT INTO dept VALUES (1, 'Engineering');\nINSERT INTO dept VALUES (2, 'Sales');\nINSERT INTO emp VALUES (1, 'Alice', 1);\nINSERT INTO emp VALUES (2, 'Bob', 2);\nSELECT e.name, (SELECT d.dept_name FROM dept AS d WHERE d.id = e.dept_id) AS dept FROM emp AS e;",
+      "expected": "name|dept\nAlice|Engineering\nBob|Sales"
+    },
+    {
+      "name": "ORDER BY + LIMIT + OFFSET combined",
+      "input": "CREATE TABLE t (val INTEGER);\nINSERT INTO t VALUES (5);\nINSERT INTO t VALUES (3);\nINSERT INTO t VALUES (8);\nINSERT INTO t VALUES (1);\nINSERT INTO t VALUES (9);\nINSERT INTO t VALUES (2);\nSELECT val FROM t ORDER BY val LIMIT 3 OFFSET 1;",
+      "expected": "val\n2\n3\n5"
+    },
+    {
+      "name": "GROUP BY + HAVING + ORDER BY + LIMIT",
+      "input": "CREATE TABLE sales (item TEXT, amount INTEGER);\nINSERT INTO sales VALUES ('A', 10);\nINSERT INTO sales VALUES ('B', 20);\nINSERT INTO sales VALUES ('A', 15);\nINSERT INTO sales VALUES ('C', 50);\nINSERT INTO sales VALUES ('B', 30);\nINSERT INTO sales VALUES ('C', 10);\nSELECT item, SUM(amount) AS total FROM sales GROUP BY item HAVING SUM(amount) >= 25 ORDER BY total DESC LIMIT 2;",
+      "expected": "item|total\nC|60\nB|50"
+    },
+    {
+      "name": "LEFT JOIN with aggregation",
+      "input": "CREATE TABLE dept (id INTEGER, name TEXT);\nCREATE TABLE emp (id INTEGER, name TEXT, dept_id INTEGER);\nINSERT INTO dept VALUES (1, 'Engineering');\nINSERT INTO dept VALUES (2, 'Sales');\nINSERT INTO dept VALUES (3, 'Marketing');\nINSERT INTO emp VALUES (1, 'Alice', 1);\nINSERT INTO emp VALUES (2, 'Bob', 1);\nINSERT INTO emp VALUES (3, 'Carol', 2);\nSELECT d.name, COUNT(e.id) AS headcount FROM dept AS d LEFT JOIN emp AS e ON d.id = e.dept_id GROUP BY d.name ORDER BY d.name;",
+      "expected": "name|headcount\nEngineering|2\nMarketing|0\nSales|1"
+    },
+    {
+      "name": "multi-join with aggregation",
+      "input": "CREATE TABLE customers (id INTEGER, name TEXT);\nCREATE TABLE orders (id INTEGER, customer_id INTEGER, product_id INTEGER);\nCREATE TABLE products (id INTEGER, name TEXT, price INTEGER);\nINSERT INTO customers VALUES (1, 'Alice');\nINSERT INTO customers VALUES (2, 'Bob');\nINSERT INTO products VALUES (1, 'Widget', 10);\nINSERT INTO products VALUES (2, 'Gadget', 20);\nINSERT INTO orders VALUES (1, 1, 1);\nINSERT INTO orders VALUES (2, 1, 2);\nINSERT INTO orders VALUES (3, 2, 1);\nSELECT c.name, SUM(p.price) AS total_spent FROM customers AS c JOIN orders AS o ON c.id = o.customer_id JOIN products AS p ON o.product_id = p.id GROUP BY c.name ORDER BY total_spent DESC;",
+      "expected": "name|total_spent\nAlice|30\nBob|10"
+    },
+    {
+      "name": "correlated subquery",
+      "input": "CREATE TABLE emp (id INTEGER, name TEXT, salary INTEGER, dept_id INTEGER);\nINSERT INTO emp VALUES (1, 'Alice', 100, 1);\nINSERT INTO emp VALUES (2, 'Bob', 200, 1);\nINSERT INTO emp VALUES (3, 'Carol', 150, 2);\nINSERT INTO emp VALUES (4, 'Dave', 300, 2);\nSELECT e.name FROM emp AS e WHERE e.salary > (SELECT AVG(e2.salary) FROM emp AS e2 WHERE e2.dept_id = e.dept_id) ORDER BY e.name;",
+      "expected": "name\nBob\nDave"
+    },
+    {
+      "name": "subquery in HAVING",
+      "input": "CREATE TABLE t (grp TEXT, val INTEGER);\nINSERT INTO t VALUES ('A', 10);\nINSERT INTO t VALUES ('A', 20);\nINSERT INTO t VALUES ('B', 50);\nINSERT INTO t VALUES ('B', 60);\nSELECT grp, AVG(val) AS avg_val FROM t GROUP BY grp HAVING AVG(val) > (SELECT AVG(val) FROM t);",
+      "expected": "grp|avg_val\nB|55.00"
+    },
+    {
+      "name": "multiple SELECTs produce separate result sets",
+      "input": "CREATE TABLE t (x INTEGER);\nINSERT INTO t VALUES (1);\nINSERT INTO t VALUES (2);\nSELECT x FROM t WHERE x = 1;\nSELECT x FROM t WHERE x = 2;",
+      "expected": "x\n1\n\nx\n2"
+    },
+    {
+      "name": "update with expression",
+      "input": "CREATE TABLE t (id INTEGER, price INTEGER, tax INTEGER);\nINSERT INTO t VALUES (1, 100, 10);\nINSERT INTO t VALUES (2, 200, 20);\nUPDATE t SET price = price + tax WHERE id = 1;\nSELECT * FROM t;",
+      "expected": "id|price|tax\n1|110|10\n2|200|20"
+    },
+    {
+      "name": "case-insensitive keywords",
+      "input": "create table t (id integer, name text);\ninsert into t values (1, 'Alice');\nselect * from t;",
+      "expected": "id|name\n1|Alice"
+    },
+    {
+      "name": "case-insensitive identifiers",
+      "input": "CREATE TABLE MyTable (MyCol INTEGER);\nINSERT INTO mytable VALUES (42);\nSELECT MYCOL FROM MYTABLE;",
+      "expected": "MyCol\n42"
+    },
+    {
+      "name": "string comparison",
+      "input": "CREATE TABLE t (name TEXT);\nINSERT INTO t VALUES ('banana');\nINSERT INTO t VALUES ('apple');\nINSERT INTO t VALUES ('cherry');\nSELECT name FROM t WHERE name > 'b' ORDER BY name;",
+      "expected": "name\nbanana\ncherry"
+    },
+    {
+      "name": "not equal operators",
+      "input": "CREATE TABLE t (x INTEGER);\nINSERT INTO t VALUES (1);\nINSERT INTO t VALUES (2);\nINSERT INTO t VALUES (3);\nSELECT x FROM t WHERE x != 2;\nSELECT x FROM t WHERE x <> 2;",
+      "expected": "x\n1\n3\n\nx\n1\n3"
+    },
+    {
+      "name": "comparison operators",
+      "input": "CREATE TABLE t (x INTEGER);\nINSERT INTO t VALUES (1);\nINSERT INTO t VALUES (2);\nINSERT INTO t VALUES (3);\nINSERT INTO t VALUES (4);\nINSERT INTO t VALUES (5);\nSELECT x FROM t WHERE x >= 2 AND x <= 4;",
+      "expected": "x\n2\n3\n4"
+    },
+    {
+      "name": "star with join shows all columns",
+      "input": "CREATE TABLE a (id INTEGER, name TEXT);\nCREATE TABLE b (id INTEGER, val INTEGER);\nINSERT INTO a VALUES (1, 'x');\nINSERT INTO b VALUES (1, 99);\nSELECT * FROM a JOIN b ON a.id = b.id;",
+      "expected": "id|name|id|val\n1|x|1|99"
+    },
+    {
+      "name": "empty result has header only",
+      "input": "CREATE TABLE t (id INTEGER, name TEXT);\nSELECT * FROM t;",
+      "expected": "id|name"
+    },
+    {
+      "name": "complex real-world query",
+      "input": "CREATE TABLE employees (id INTEGER, name TEXT, dept TEXT, salary INTEGER);\nINSERT INTO employees VALUES (1, 'Alice', 'Engineering', 120);\nINSERT INTO employees VALUES (2, 'Bob', 'Engineering', 100);\nINSERT INTO employees VALUES (3, 'Carol', 'Sales', 90);\nINSERT INTO employees VALUES (4, 'Dave', 'Sales', 110);\nINSERT INTO employees VALUES (5, 'Eve', 'Marketing', 95);\nINSERT INTO employees VALUES (6, 'Frank', 'Engineering', 130);\nSELECT dept, COUNT(*) AS cnt, AVG(salary) AS avg_sal FROM employees GROUP BY dept HAVING COUNT(*) > 1 ORDER BY avg_sal DESC;",
+      "expected": "dept|cnt|avg_sal\nEngineering|3|116.67\nSales|2|100.00"
+    },
+    {
+      "name": "large dataset with complex query",
+      "input": "CREATE TABLE items (id INTEGER, category TEXT, price INTEGER, in_stock BOOLEAN);\nINSERT INTO items VALUES (1, 'A', 10, TRUE);\nINSERT INTO items VALUES (2, 'B', 20, TRUE);\nINSERT INTO items VALUES (3, 'A', 30, FALSE);\nINSERT INTO items VALUES (4, 'B', 40, TRUE);\nINSERT INTO items VALUES (5, 'C', 50, TRUE);\nINSERT INTO items VALUES (6, 'A', 15, TRUE);\nINSERT INTO items VALUES (7, 'B', 25, FALSE);\nINSERT INTO items VALUES (8, 'C', 35, TRUE);\nINSERT INTO items VALUES (9, 'A', 20, TRUE);\nINSERT INTO items VALUES (10, 'C', 45, FALSE);\nSELECT category, COUNT(*) AS cnt, SUM(price) AS total, AVG(price) AS avg_price FROM items WHERE in_stock = TRUE GROUP BY category ORDER BY total DESC;",
+      "expected": "category|cnt|total|avg_price\nC|2|85|42.50\nB|2|60|30.00\nA|3|45|15.00"
+    },
+    {
+      "name": "deeply nested subquery",
+      "input": "CREATE TABLE t (id INTEGER, val INTEGER);\nINSERT INTO t VALUES (1, 10);\nINSERT INTO t VALUES (2, 20);\nINSERT INTO t VALUES (3, 30);\nINSERT INTO t VALUES (4, 40);\nINSERT INTO t VALUES (5, 50);\nSELECT id FROM t WHERE val > (SELECT AVG(val) FROM t WHERE val > (SELECT MIN(val) FROM t));",
+      "expected": "id\n4\n5"
+    },
+    {
+      "name": "update with subquery in WHERE",
+      "input": "CREATE TABLE emp (id INTEGER, salary INTEGER, dept TEXT);\nINSERT INTO emp VALUES (1, 100, 'A');\nINSERT INTO emp VALUES (2, 200, 'A');\nINSERT INTO emp VALUES (3, 150, 'B');\nUPDATE emp SET salary = salary + 50 WHERE salary < (SELECT AVG(salary) FROM emp);\nSELECT * FROM emp ORDER BY id;",
+      "expected": "id|salary|dept\n1|150|A\n2|200|A\n3|150|B"
+    },
+    {
+      "name": "NOT with compound conditions",
+      "input": "CREATE TABLE t (x INTEGER, y INTEGER);\nINSERT INTO t VALUES (1, 10);\nINSERT INTO t VALUES (2, 20);\nINSERT INTO t VALUES (3, 30);\nSELECT x FROM t WHERE NOT (x = 1 OR y = 30);",
+      "expected": "x\n2"
+    },
+    {
+      "name": "aggregate function header without alias",
+      "input": "CREATE TABLE t (val INTEGER);\nINSERT INTO t VALUES (10);\nINSERT INTO t VALUES (20);\nSELECT COUNT(*), SUM(val), MIN(val) FROM t;",
+      "expected": "COUNT(*)|SUM(val)|MIN(val)\n2|30|10"
+    },
+    {
+      "name": "left join group by count correctly handles NULLs",
+      "input": "CREATE TABLE authors (id INTEGER, name TEXT);\nCREATE TABLE books (id INTEGER, author_id INTEGER, title TEXT);\nINSERT INTO authors VALUES (1, 'Alice');\nINSERT INTO authors VALUES (2, 'Bob');\nINSERT INTO authors VALUES (3, 'Carol');\nINSERT INTO books VALUES (1, 1, 'Book A');\nINSERT INTO books VALUES (2, 1, 'Book B');\nINSERT INTO books VALUES (3, 3, 'Book C');\nSELECT a.name, COUNT(b.id) AS book_count FROM authors AS a LEFT JOIN books AS b ON a.id = b.author_id GROUP BY a.name ORDER BY book_count DESC, a.name;",
+      "expected": "name|book_count\nAlice|2\nCarol|1\nBob|0"
+    },
+    {
+      "name": "multiple updates then complex select",
+      "input": "CREATE TABLE inventory (item TEXT, qty INTEGER, price INTEGER);\nINSERT INTO inventory VALUES ('Apple', 50, 1);\nINSERT INTO inventory VALUES ('Banana', 30, 2);\nINSERT INTO inventory VALUES ('Cherry', 20, 5);\nINSERT INTO inventory VALUES ('Date', 10, 8);\nUPDATE inventory SET qty = qty - 5 WHERE price > 3;\nDELETE FROM inventory WHERE qty <= 5;\nSELECT item, qty, qty * price AS value FROM inventory ORDER BY value DESC;",
+      "expected": "item|qty|value\nCherry|15|75\nBanana|30|60\nApple|50|50"
+    },
+    {
+      "name": "select with parenthesized expression precedence",
+      "input": "CREATE TABLE t (x INTEGER);\nINSERT INTO t VALUES (6);\nSELECT x * (2 + 3) AS result, x * 2 + 3 AS other FROM t;",
+      "expected": "result|other\n30|15"
+    },
+    {
+      "name": "AVG returns float",
+      "input": "CREATE TABLE t (val INTEGER);\nINSERT INTO t VALUES (1);\nINSERT INTO t VALUES (2);\nSELECT AVG(val) AS avg FROM t;",
+      "expected": "avg\n1.50"
+    },
+    {
+      "name": "inequality comparison",
+      "input": "CREATE TABLE t (x INTEGER, y INTEGER);\nINSERT INTO t VALUES (1, 1);\nINSERT INTO t VALUES (2, 3);\nINSERT INTO t VALUES (3, 3);\nSELECT x, y FROM t WHERE x != y;",
+      "expected": "x|y\n2|3"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+[package]
+name = "sql-database"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "sql-database"
+path = "src/main.rs"
+
+[lib]
+name = "sql_database"
+path = "src/lib.rs"

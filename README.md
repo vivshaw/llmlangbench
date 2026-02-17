@@ -147,6 +147,7 @@ the agent sees the spec and scaffold, then follows a TDD workflow: write tests, 
 | `http-request-parser` | medium | protocol parsing | parse raw HTTP/1.1 requests from scratch — headers, Content-Length bodies, chunked transfer encoding with chunk extensions — and output structured text |
 | `process-simulator` | medium | concurrency | simulate concurrent processes with channels (bounded, capacity 1), locks (mutual exclusion), worker-limited scheduling with provisional state updates, and deadlock detection |
 | `mini-typechecker` | hard | PL theory | Hindley-Milner type inference with let-polymorphism, `let rec`, mutual recursion, product types (tuples), type annotations |
+| `sql-database` | extreme | databases | in-memory SQL database engine — parser, storage, joins (inner/left), aggregation (GROUP BY/HAVING), subqueries (correlated, EXISTS, IN), NULL three-valued logic, ORDER BY, LIMIT/OFFSET, DISTINCT, LIKE |
 
 ### adding a new task
 

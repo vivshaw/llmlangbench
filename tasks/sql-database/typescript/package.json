@@ -1,0 +1,9 @@
+{
+  "name": "sql-database",
+  "version": "1.0.0",
+  "type": "module",
+  "devDependencies": {
+    "tsx": "^4.0.0",
+    "vitest": "^3.0.0"
+  }
+}

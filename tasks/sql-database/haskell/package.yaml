@@ -1,0 +1,24 @@
+name: sql-database
+version: 0.1.0
+
+dependencies:
+  - base >= 4.7 && < 5
+  - containers
+
+library:
+  source-dirs: src
+
+executables:
+  sql-database-exe:
+    main: Main.hs
+    source-dirs: app
+    dependencies:
+      - sql-database
+
+tests:
+  sql-database-test:
+    main: Spec.hs
+    source-dirs: test
+    dependencies:
+      - sql-database
+      - hspec
