@@ -88,7 +88,7 @@ program
   .description("run benchmarks against discovered tasks")
   .option("-m, --model <model>", "Claude model to use", "claude-sonnet-4-5-20250929")
   .option("-t, --trials <n>", "number of trials per combo", "3")
-  .option("--max-turns <n>", "max turns per trial", "30")
+  .option("--max-turns <n>", "max turns per trial", "60")
   .option("--max-budget <usd>", "max budget per trial in USD", "5")
   .option(
     "--task <id>",

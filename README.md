@@ -67,7 +67,7 @@ npx tsx src/cli.ts score results/{runId}/{task}/{lang}/trial-1 --tests tasks/{ta
 |---|---|---|
 | `-m, --model` | `claude-sonnet-4-5-20250929` | model for trial agents |
 | `-t, --trials` | `3` | number of trials per task/language combo |
-| `--max-turns` | `30` | max agent turns per trial |
+| `--max-turns` | `60` | max agent turns per trial |
 | `--max-budget` | `5` | max USD per trial |
 | `--task` | all | run only a specific task |
 | `--language` | all | run only a specific language |
