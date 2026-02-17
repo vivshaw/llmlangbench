@@ -107,7 +107,9 @@ export async function runTrial(
     })) {
       transcriptStream.write(JSON.stringify(message) + "\n");
       if (message.type === "result") {
-        resultMessage = message;
+        if (!resultMessage || (resultMessage.num_turns === 0 && message.num_turns > 0)) {
+          resultMessage = message;
+        }
       }
     }
 

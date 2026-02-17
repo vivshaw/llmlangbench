@@ -24,6 +24,7 @@ const SKIP_DIRS = new Set([
 ]);
 
 const SKIP_EXTENSIONS = new Set([
+  // compiled / binary
   ".jar",
   ".class",
   ".o",
@@ -31,7 +32,18 @@ const SKIP_EXTENSIONS = new Set([
   ".dylib",
   ".exe",
   ".pyc",
+  ".a",
+  ".rlib",
+  ".rmeta",
+  ".hi",
+  ".dyn_hi",
+  ".bin",
+  // generated / metadata
   ".lock",
+  ".jsonl",
+  ".map",
+  ".d",
+  ".timestamp",
 ]);
 
 export function collectSourceFiles(dir: string): Map<string, string> {
@@ -50,9 +62,19 @@ export function collectSourceFiles(dir: string): Map<string, string> {
         if (/^run\./.test(entry.name)) continue;
         if (SKIP_EXTENSIONS.has(path.extname(entry.name))) continue;
 
+        // skip files without extensions (likely compiled binaries like Go executables)
+        if (!path.extname(entry.name)) continue;
+
+        // skip files over 500KB (definitely not source code)
+        const filePath = path.join(current, entry.name);
+        try {
+          const stat = fs.statSync(filePath);
+          if (stat.size > 500_000) continue;
+        } catch { continue; }
+
         try {
           const content = fs.readFileSync(
-            path.join(current, entry.name),
+            filePath,
             "utf-8",
           );
           files.set(relPath, content);
@@ -123,7 +145,7 @@ Respond ONLY with the JSON object, no other text.`;
 
   const response = await client.messages.create({
     model,
-    max_tokens: 1024,
+    max_tokens: 2048,
     temperature: 0,
     messages: [{ role: "user", content: prompt }],
   });
@@ -132,11 +154,26 @@ Respond ONLY with the JSON object, no other text.`;
   const textBlock = response.content.find((b) => b.type === "text");
   const raw = textBlock?.text ?? "";
 
-  // parse JSON, handling optional markdown code fences
+  // parse JSON, handling optional markdown code fences and malformed responses
   const jsonMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/) ?? [null, raw];
-  const jsonStr = (jsonMatch[1] ?? raw).trim();
+  let jsonStr = (jsonMatch[1] ?? raw).trim();
 
-  const parsed = JSON.parse(jsonStr) as { score: number; review: string };
+  let parsed: { score: number; review: string };
+  try {
+    parsed = JSON.parse(jsonStr);
+  } catch {
+    // fallback: try to extract score and review with regex
+    const scoreMatch = raw.match(/"score"\s*:\s*(\d+)/);
+    const reviewMatch = raw.match(/"review"\s*:\s*"([\s\S]*?)(?:"\s*[,}])/);
+    if (scoreMatch) {
+      parsed = {
+        score: parseInt(scoreMatch[1]!),
+        review: reviewMatch?.[1] ?? "review text could not be parsed",
+      };
+    } else {
+      throw new Error(`Could not parse review response: ${raw.slice(0, 300)}`);
+    }
+  }
 
   return {
     score: Math.max(0, Math.min(100, parsed.score)),
