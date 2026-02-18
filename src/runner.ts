@@ -34,8 +34,6 @@ export async function runTrial(
 ): Promise<TrialResult> {
   fs.mkdirSync(trialDir, { recursive: true });
 
-  const startMs = Date.now();
-
   try {
     // copy scaffold into trial dir
     copyDirSync(scaffoldDir, trialDir);
@@ -115,8 +113,6 @@ export async function runTrial(
 
     transcriptStream.end();
 
-    const durationMs = Date.now() - startMs;
-
     if (!resultMessage) {
       return {
         taskId,
@@ -127,7 +123,7 @@ export async function runTrial(
         inputTokens: 0,
         outputTokens: 0,
         turns: 0,
-        durationMs,
+        durationMs: 0,
         testsPassed: 0,
         testsTotal: 0,
         testOutput: "no result message received from SDK",
@@ -183,7 +179,7 @@ export async function runTrial(
       inputTokens,
       outputTokens,
       turns: resultMessage.num_turns,
-      durationMs,
+      durationMs: resultMessage.duration_ms,
       testsPassed: scoreResult.passed,
       testsTotal: scoreResult.total,
       testOutput: scoreResult.output,
@@ -192,7 +188,6 @@ export async function runTrial(
     };
   } catch (err: unknown) {
     // SDK process crash — record the error and continue the run
-    const durationMs = Date.now() - startMs;
     return {
       taskId,
       language: language.id,
@@ -202,7 +197,7 @@ export async function runTrial(
       inputTokens: 0,
       outputTokens: 0,
       turns: 0,
-      durationMs,
+      durationMs: 0,
       testsPassed: 0,
       testsTotal: 0,
       testOutput: `SDK error: ${err instanceof Error ? err.message : String(err)}`,
