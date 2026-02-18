@@ -4,7 +4,7 @@
   "description": "benchmark harness for evaluating LLM coding performance across programming languages",
   "type": "module",
   "scripts": {
-    "bench": "tsx src/cli.ts",
+    "bench": "node --env-file=.env --import=tsx/esm src/cli.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
