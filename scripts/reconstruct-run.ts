@@ -10,6 +10,7 @@
  *   --skip-reviews   Don't re-run AI code reviews (no API calls)
  *   --transcript-only Equivalent to --skip-scoring --skip-reviews
  *   --only-missing    Only run scoring/reviews for trials that don't have them yet
+ *   --fix-durations   Only update durationMs from transcript data (no scoring/reviews)
  *
  * Incremental behavior:
  *   If run.json already exists, each trial's existing data is preserved
@@ -47,6 +48,7 @@ interface TranscriptInfo {
   inputTokens: number;
   outputTokens: number;
   turns: number;
+  durationMs: number;
 }
 
 function extractFromTranscript(transcriptPath: string): TranscriptInfo {
@@ -67,7 +69,7 @@ function extractFromTranscript(transcriptPath: string): TranscriptInfo {
   }
 
   if (!bestResult) {
-    return { status: "error", costUsd: 0, inputTokens: 0, outputTokens: 0, turns: 0 };
+    return { status: "error", costUsd: 0, inputTokens: 0, outputTokens: 0, turns: 0, durationMs: 0 };
   }
 
   let status: TrialResult["status"];
@@ -93,6 +95,7 @@ function extractFromTranscript(transcriptPath: string): TranscriptInfo {
     inputTokens,
     outputTokens,
     turns: bestResult.num_turns ?? 0,
+    durationMs: bestResult.duration_ms ?? 0,
   };
 }
 
@@ -107,11 +110,13 @@ async function main() {
     process.exit(1);
   }
 
+  const fixDurations = flags.has("--fix-durations");
   const transcriptOnly = flags.has("--transcript-only");
-  const skipScoring = transcriptOnly || flags.has("--skip-scoring");
-  const skipReviews = transcriptOnly || flags.has("--skip-reviews");
+  const skipScoring = fixDurations || transcriptOnly || flags.has("--skip-scoring");
+  const skipReviews = fixDurations || transcriptOnly || flags.has("--skip-reviews");
   const onlyMissing = flags.has("--only-missing");
 
+  if (fixDurations) console.log("fixing durations only");
   if (skipScoring) console.log("skipping scoring");
   if (skipReviews) console.log("skipping reviews");
   if (onlyMissing) console.log("only processing trials with missing data");
@@ -188,6 +193,13 @@ async function main() {
 
         // 1. extract info from transcript
         const info = extractFromTranscript(transcriptPath);
+
+        // --fix-durations: only update durationMs, preserve everything else
+        if (fixDurations && prev) {
+          console.log(`  duration: ${prev.durationMs} -> ${info.durationMs}`);
+          results.push({ ...prev, durationMs: info.durationMs });
+          continue;
+        }
         console.log(`  transcript: ${info.status} | ${info.turns} turns | $${info.costUsd.toFixed(4)}`);
 
         // 2. score (or preserve existing)
@@ -228,13 +240,7 @@ async function main() {
           console.log(`  review: preserved ${reviewScore}/100`);
         }
 
-        // get file modification time as rough duration estimate
-        const durationMs = prev?.durationMs ?? (() => {
-          try {
-            const stat = fs.statSync(transcriptPath);
-            return stat.mtimeMs - stat.birthtimeMs;
-          } catch { return 0; }
-        })();
+        const durationMs = info.durationMs;
 
         results.push({
           taskId,
