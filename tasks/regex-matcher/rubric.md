@@ -7,6 +7,12 @@ Evaluate the submitted code on the following dimensions:
 - **Idiom usage** (0-25): Does it use language-appropriate patterns? For example: algebraic data types for the AST in Haskell/Rust, enums in Java, clean OOP or functional decomposition where appropriate.
 - **Readability** (0-25): Is the code understandable? Are the regex AST nodes clearly named? Is the matching logic followable? Is the code appropriately decomposed without being over-abstracted?
 
+## Scoring
+
+Score each dimension independently, then sum them for the total score (out of 100). A score of 100 is appropriate when all rubric criteria are fully met. Do not reserve points for hypothetical improvements not mentioned in the rubric.
+
+## Deductions
+
 Deduct points for:
 - Using built-in regex libraries or functions (this should score 0 for correctness)
 - Monolithic functions that mix parsing and matching

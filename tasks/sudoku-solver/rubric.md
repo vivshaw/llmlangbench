@@ -7,6 +7,12 @@ Evaluate the submitted code on the following dimensions:
 - **Idiom usage** (0-25): Does it use language-appropriate patterns? For example: pattern matching in Haskell/Rust, iterators, proper data structures, idiomatic error handling.
 - **Readability** (0-25): Is the code well-structured and understandable? Is the solver logic clearly separated from helpers? Are variable names descriptive? Is the code appropriately decomposed without being over-abstracted?
 
+## Scoring
+
+Score each dimension independently, then sum them for the total score (out of 100). A score of 100 is appropriate when all rubric criteria are fully met. Do not reserve points for hypothetical improvements not mentioned in the rubric.
+
+## Deductions
+
 Deduct points for:
 - Brute-force-only approach with no pruning or constraint propagation
 - Unnecessary complexity or over-engineering (e.g. implementing Dancing Links for a standard backtracking problem)

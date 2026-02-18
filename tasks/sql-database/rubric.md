@@ -7,6 +7,12 @@ Evaluate the submitted code on the following dimensions:
 - **Idiom usage** (0-25): Does it use language-appropriate patterns? For example: enums/ADTs for AST nodes and SQL types, proper data structures for table storage and indexes, pattern matching where appropriate, iterators/streams for result processing, proper error handling idioms.
 - **Readability** (0-25): Is the code understandable and well-decomposed? Are components clearly named? Is the query execution flow followable? Is the code appropriately modularized without being over-abstracted?
 
+## Scoring
+
+Score each dimension independently, then sum them for the total score (out of 100). A score of 100 is appropriate when all rubric criteria are fully met. Do not reserve points for hypothetical improvements not mentioned in the rubric.
+
+## Deductions
+
 Deduct points for:
 - Missing or broken NULL three-valued logic (NULL propagation in expressions, WHERE filtering, aggregate behavior)
 - Missing or broken JOIN support (especially LEFT JOIN NULL filling)

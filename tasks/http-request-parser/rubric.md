@@ -7,6 +7,12 @@ Evaluate the submitted code on the following dimensions:
 - **Idiom usage** (0-25): Does it use language-appropriate patterns? For example: proper string handling, appropriate data structures for headers (maps/dicts), clean iteration patterns, idiomatic error handling.
 - **Readability** (0-25): Is the code understandable? Are functions and variables well-named? Is the chunked decoding logic clear? Is the code appropriately decomposed?
 
+## Scoring
+
+Score each dimension independently, then sum them for the total score (out of 100). A score of 100 is appropriate when all rubric criteria are fully met. Do not reserve points for hypothetical improvements not mentioned in the rubric.
+
+## Deductions
+
 Deduct points for:
 - Using HTTP parsing libraries (this should score 0 for correctness)
 - Fragile parsing that relies on fixed positions rather than proper delimiter scanning

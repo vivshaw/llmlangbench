@@ -137,9 +137,11 @@ ${filesSection}
 
 ## Instructions
 
-Evaluate the code against the rubric and specification. Respond with a JSON object containing:
-- "score": a number from 0 to 100 (0 = terrible, 100 = perfect)
-- "review": a brief written review (1-2 paragraphs) explaining the score
+Evaluate the code against the rubric and specification. Score each rubric dimension independently, then sum the dimension scores for the total. A score of 100 is appropriate when all criteria are fully met — do not reserve points for hypothetical improvements not mentioned in the rubric.
+
+Respond with a JSON object containing:
+- "score": the summed total (0-100)
+- "review": a brief written review (1-2 paragraphs) explaining the per-dimension scores
 
 Respond ONLY with the JSON object, no other text.`;
 

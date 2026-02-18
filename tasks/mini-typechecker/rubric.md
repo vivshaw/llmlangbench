@@ -7,6 +7,12 @@ Evaluate the submitted code on the following dimensions:
 - **Idiom usage** (0-25): Does it use language-appropriate patterns? For example: algebraic data types for the AST and types in Haskell/Rust, sum types or sealed classes in other languages, proper use of the language's abstraction mechanisms.
 - **Readability** (0-25): Is the code understandable? Are AST nodes, type constructors, and inference functions clearly named? Is the unification algorithm followable? Is the code well-decomposed without being over-abstracted?
 
+## Scoring
+
+Score each dimension independently, then sum them for the total score (out of 100). A score of 100 is appropriate when all rubric criteria are fully met. Do not reserve points for hypothetical improvements not mentioned in the rubric.
+
+## Deductions
+
 Deduct points for:
 - Missing or broken unification (e.g. no occurs check, no proper substitution)
 - Missing let-polymorphism (no generalization/instantiation)
