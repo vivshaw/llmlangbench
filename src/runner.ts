@@ -34,6 +34,8 @@ export async function runTrial(
 ): Promise<TrialResult> {
   fs.mkdirSync(trialDir, { recursive: true });
 
+  let resultMessage: SDKResultMessage | undefined;
+
   try {
     // copy scaffold into trial dir
     copyDirSync(scaffoldDir, trialDir);
@@ -81,7 +83,6 @@ export async function runTrial(
       "Your solution will be scored separately, so focus on writing good tests and a correct implementation.",
     ].filter(Boolean).join("\n");
 
-    let resultMessage: SDKResultMessage | undefined;
     const transcriptPath = path.join(trialDir, "transcript.jsonl");
     const transcriptStream = fs.createWriteStream(transcriptPath);
 
@@ -112,7 +113,8 @@ export async function runTrial(
     }
 
     transcriptStream.end();
-
+  } catch (err: unknown) {
+    // SDK threw after emitting messages — if we captured a good result, continue with it
     if (!resultMessage) {
       return {
         taskId,
@@ -126,68 +128,12 @@ export async function runTrial(
         durationMs: 0,
         testsPassed: 0,
         testsTotal: 0,
-        testOutput: "no result message received from SDK",
+        testOutput: `SDK error: ${err instanceof Error ? err.message : String(err)}`,
       };
     }
+  }
 
-    // map SDK subtype to our status
-    let status: TrialResult["status"];
-    switch (resultMessage.subtype) {
-      case "success":
-        status = "success";
-        break;
-      case "error_max_turns":
-        status = "max_turns";
-        break;
-      case "error_max_budget_usd":
-        status = "max_budget";
-        break;
-      default:
-        status = "error";
-        break;
-    }
-
-    // score the result
-    const scoreResult = await scoreTrialDir(trialDir, language, testsPath);
-
-    // AI code review (best-effort — failure shouldn't tank the trial)
-    let reviewScore: number | undefined;
-    let reviewText: string | undefined;
-
-    try {
-      const review = await reviewTrialDir(trialDir, specPath, rubricPath, reviewModel, scaffoldDir);
-      reviewScore = review.score;
-      reviewText = review.review;
-    } catch (err: unknown) {
-      reviewText = `review failed: ${err instanceof Error ? err.message : String(err)}`;
-    }
-
-    // sum cumulative tokens across all models used in the session
-    let inputTokens = 0;
-    let outputTokens = 0;
-    for (const mu of Object.values(resultMessage.modelUsage)) {
-      inputTokens += mu.inputTokens;
-      outputTokens += mu.outputTokens;
-    }
-
-    return {
-      taskId,
-      language: language.id,
-      trial,
-      status,
-      costUsd: resultMessage.total_cost_usd,
-      inputTokens,
-      outputTokens,
-      turns: resultMessage.num_turns,
-      durationMs: resultMessage.duration_ms,
-      testsPassed: scoreResult.passed,
-      testsTotal: scoreResult.total,
-      testOutput: scoreResult.output,
-      reviewScore,
-      reviewText,
-    };
-  } catch (err: unknown) {
-    // SDK process crash — record the error and continue the run
+  if (!resultMessage) {
     return {
       taskId,
       language: language.id,
@@ -200,7 +146,64 @@ export async function runTrial(
       durationMs: 0,
       testsPassed: 0,
       testsTotal: 0,
-      testOutput: `SDK error: ${err instanceof Error ? err.message : String(err)}`,
+      testOutput: "no result message received from SDK",
     };
   }
+
+  // map SDK subtype to our status
+  let status: TrialResult["status"];
+  switch (resultMessage.subtype) {
+    case "success":
+      status = "success";
+      break;
+    case "error_max_turns":
+      status = "max_turns";
+      break;
+    case "error_max_budget_usd":
+      status = "max_budget";
+      break;
+    default:
+      status = "error";
+      break;
+  }
+
+  // score the result
+  const scoreResult = await scoreTrialDir(trialDir, language, testsPath);
+
+  // AI code review (best-effort — failure shouldn't tank the trial)
+  let reviewScore: number | undefined;
+  let reviewText: string | undefined;
+
+  try {
+    const review = await reviewTrialDir(trialDir, specPath, rubricPath, reviewModel, scaffoldDir);
+    reviewScore = review.score;
+    reviewText = review.review;
+  } catch (err: unknown) {
+    reviewText = `review failed: ${err instanceof Error ? err.message : String(err)}`;
+  }
+
+  // sum cumulative tokens across all models used in the session
+  let inputTokens = 0;
+  let outputTokens = 0;
+  for (const mu of Object.values(resultMessage.modelUsage)) {
+    inputTokens += mu.inputTokens;
+    outputTokens += mu.outputTokens;
+  }
+
+  return {
+    taskId,
+    language: language.id,
+    trial,
+    status,
+    costUsd: resultMessage.total_cost_usd,
+    inputTokens,
+    outputTokens,
+    turns: resultMessage.num_turns,
+    durationMs: resultMessage.duration_ms,
+    testsPassed: scoreResult.passed,
+    testsTotal: scoreResult.total,
+    testOutput: scoreResult.output,
+    reviewScore,
+    reviewText,
+  };
 }
