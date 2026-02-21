@@ -1,23 +1,22 @@
 /**
- * Reconstructs a run.json from transcript files when a run crashes
- * before writing results. Merges incrementally with existing run.json
- * so you can layer on scoring and reviews in separate passes.
+ * reconstructs a `run.json` from transcript files when a run crashes
+ * before writing results. merges incrementally with the existing `run.json`, if
+ * present, so you can layer on scoring and reviews in separate passes.
  *
- * Usage: npx tsx scripts/reconstruct-run.ts <run-dir> [--skip-scoring] [--skip-reviews]
+ * usage: npx tsx scripts/reconstruct-run.ts <run-dir> [--skip-scoring] [--skip-reviews]
  *
- * Flags:
- *   --skip-scoring   Don't re-run test scoring (no subprocesses)
- *   --skip-reviews   Don't re-run AI code reviews (no API calls)
- *   --transcript-only Equivalent to --skip-scoring --skip-reviews
- *   --only-missing    Only run scoring/reviews for trials that don't have them yet
- *   --fix-durations   Only update durationMs from transcript data (no scoring/reviews)
+ * flags:
+ *   --skip-scoring    don't re-run test scoring
+ *   --skip-reviews    don't re-run AI code reviews
+ *   --only-missing    only run scoring/reviews for trials that don't have them yet
+ *   --fix-durations   only update `durationMs` from transcript data (no scoring/reviews)
  *
- * Incremental behavior:
- *   If run.json already exists, each trial's existing data is preserved
- *   for any step that is skipped. For example:
- *     1. Run with --transcript-only    → creates run.json with cost/turns/status
- *     2. Run with --skip-reviews       → adds scoring, preserves transcript data
- *     3. Run with --skip-scoring       → adds reviews, preserves scoring data
+ * incremental behavior:
+ *   if run.json already exists, each trial's existing data is preserved
+ *   for any step that is skipped. for example:
+ *     1. run with --skip-scoring --skip-reviews → creates run.json with cost/turns/status
+ *     2. run with --skip-reviews                → adds scoring, preserves transcript data
+ *     3. run with --skip-scoring                → adds reviews, preserves scoring data
  */
 
 import * as fs from "node:fs";
@@ -111,9 +110,8 @@ async function main() {
   }
 
   const fixDurations = flags.has("--fix-durations");
-  const transcriptOnly = flags.has("--transcript-only");
-  const skipScoring = fixDurations || transcriptOnly || flags.has("--skip-scoring");
-  const skipReviews = fixDurations || transcriptOnly || flags.has("--skip-reviews");
+  const skipScoring = fixDurations || flags.has("--skip-scoring");
+  const skipReviews = fixDurations || flags.has("--skip-reviews");
   const onlyMissing = flags.has("--only-missing");
 
   if (fixDurations) console.log("fixing durations only");

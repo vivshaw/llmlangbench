@@ -46,6 +46,10 @@ const SKIP_EXTENSIONS = new Set([
   ".timestamp",
 ]);
 
+/**
+ * it's necessary to filter out all the non-source files before passing the results to
+ * the reviewer. otherwise, it sees tons of irrelevant stuff and gives bad reviews.
+ */
 export function collectSourceFiles(dir: string): Map<string, string> {
   const files = new Map<string, string>();
 
@@ -94,24 +98,22 @@ export async function reviewTrialDir(
   specPath: string,
   rubricPath: string,
   model = "claude-sonnet-4-5-20250929",
-  scaffoldDir?: string,
+  scaffoldDir: string,
 ): Promise<ReviewResult> {
   const client = new Anthropic();
 
   const spec = fs.readFileSync(specPath, "utf-8");
   const rubric = fs.readFileSync(rubricPath, "utf-8");
 
-  let sourceFiles = collectSourceFiles(dir);
+  const allFiles = collectSourceFiles(dir);
 
   // only review files the agent wrote or modified (exclude unchanged scaffold)
-  if (scaffoldDir) {
-    const scaffold = collectSourceFiles(scaffoldDir);
-    sourceFiles = new Map(
-      Array.from(sourceFiles).filter(
-        ([relPath, content]) => !scaffold.has(relPath) || scaffold.get(relPath) !== content,
-      ),
-    );
-  }
+  const scaffold = collectSourceFiles(scaffoldDir);
+  const sourceFiles = new Map(
+    Array.from(allFiles).filter(
+      ([relPath, content]) => !scaffold.has(relPath) || scaffold.get(relPath) !== content,
+    ),
+  );
 
   if (sourceFiles.size === 0) {
     return { score: 0, review: "No source files found in trial directory." };
